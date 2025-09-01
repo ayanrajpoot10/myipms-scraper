@@ -32,6 +32,12 @@ func showHelp() {
 	fmt.Println("  -start <num>       Starting page number (default: 1)")
 	fmt.Println()
 
+	fmt.Println("CONCURRENCY OPTIONS:")
+	fmt.Println("  -workers <num>     Number of concurrent workers (default: 3, max: 10)")
+	fmt.Println("  -delay <ms>        Delay between requests in milliseconds (default: 500ms)")
+	fmt.Println("                     Use -workers=1 for sequential processing")
+	fmt.Println()
+
 	fmt.Println("PROXY OPTIONS:")
 	fmt.Println("  -proxy <url>       Proxy URL with optional authentication")
 	fmt.Println("                     Format: protocol://host:port[@user:pass]")
@@ -78,6 +84,13 @@ func showHelp() {
 	fmt.Println("    scraper -pages=0                                # Scrape unlimited pages (same as default)")
 	fmt.Println()
 
+	fmt.Println("  Concurrent scraping:")
+	fmt.Println("    scraper -workers=5                              # Use 5 concurrent workers")
+	fmt.Println("    scraper -workers=3 -delay=1000                  # 3 workers, 1 second delay")
+	fmt.Println("    scraper -workers=1                              # Sequential processing")
+	fmt.Println("    scraper -country=USA -workers=8 -delay=200      # Fast scraping with rate limiting")
+	fmt.Println()
+
 	fmt.Println("  With proxy:")
 	fmt.Println("    scraper -proxy=http://proxy.example.com:8080")
 	fmt.Println("    scraper -proxy=http://proxy.example.com:8080@username:password")
@@ -102,6 +115,9 @@ func showHelp() {
 	fmt.Println("  • Start page allows resuming scraping from a specific page")
 	fmt.Println("  • Proxy format: protocol://host:port[@user:pass] (auth optional)")
 	fmt.Println("  • Supported protocols: HTTP, HTTPS, and SOCKS5")
+	fmt.Println("  • Concurrent scraping uses multiple workers for faster results")
+	fmt.Println("  • Higher worker count = faster scraping, but may trigger rate limits")
+	fmt.Println("  • Use appropriate delay between requests to respect server limits")
 	fmt.Println("  • First run will prompt for cookies (required for authentication)")
 	fmt.Println("  • Cookies are saved to cookies.json for future runs")
 	fmt.Println("  • If scraping fails, you may need to update cookies, change IP, or use a proxy")
@@ -149,7 +165,7 @@ func displayCategoryString(title string, items map[string]string, showTotal bool
 	} else {
 		fmt.Println()
 	}
-} 
+}
 
 // showSpecificOptions displays filter options based on provided flags
 // If no flags are provided, shows all available options
@@ -234,8 +250,14 @@ func displayScrapingFilter(filter *Filter, config *Config) {
 		}
 	}
 
-	fmt.Printf("\nOutput: %s\nPages: %s (starting from page %d)%s\n",
-		config.Output, getPagesDisplay(config.MaxPages), config.StartPage, proxyInfo)
+	// Show concurrency configuration
+	concurrencyInfo := fmt.Sprintf("\nConcurrency: %d workers, %dms delay", config.Workers, config.Delay)
+	if config.Workers == 1 {
+		concurrencyInfo = "\nMode: Sequential (single worker)"
+	}
+
+	fmt.Printf("\nOutput: %s\nPages: %s (starting from page %d)%s%s\n",
+		config.Output, getPagesDisplay(config.MaxPages), config.StartPage, proxyInfo, concurrencyInfo)
 }
 
 // getPagesDisplay returns the appropriate display string for MaxPages

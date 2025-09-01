@@ -25,6 +25,8 @@ type Config struct {
 	ProxyURL      string
 	ProxyUser     string
 	ProxyPass     string
+	Workers       int
+	Delay         int
 	Help          bool
 	List          bool
 }
@@ -68,6 +70,8 @@ func parseFlags() *Config {
 	flag.IntVar(&config.MaxPages, "pages", 0, "Maximum number of pages to scrape (0 = unlimited, default: unlimited)")
 	flag.IntVar(&config.StartPage, "start", 1, "Starting page number (default: 1)")
 	flag.StringVar(&config.ProxyURL, "proxy", "", "Proxy URL with optional auth (e.g., http://proxy.example.com:8080@user:pass)")
+	flag.IntVar(&config.Workers, "workers", 3, "Number of concurrent workers (default: 3, max recommended: 10)")
+	flag.IntVar(&config.Delay, "delay", 500, "Delay between requests in milliseconds (default: 500ms)")
 	flag.BoolVar(&config.Help, "help", false, "Show help message")
 	flag.BoolVar(&config.List, "list", false, "Show all available options for all filters")
 
@@ -212,6 +216,19 @@ func validateAndResolveFilters(config *Config) (*Filter, error) {
 	// Validate start page
 	if config.StartPage < 1 {
 		return nil, fmt.Errorf("start page must be a positive integer (current: %d)", config.StartPage)
+	}
+
+	// Validate workers count
+	if config.Workers < 1 {
+		return nil, fmt.Errorf("workers count must be at least 1 (current: %d)", config.Workers)
+	}
+	if config.Workers > 10 {
+		return nil, fmt.Errorf("workers count should not exceed 10 to avoid server overload (current: %d)", config.Workers)
+	}
+
+	// Validate delay
+	if config.Delay < 0 {
+		return nil, fmt.Errorf("delay must be non-negative (current: %d)", config.Delay)
 	}
 
 	// Parse and validate proxy URL if provided
