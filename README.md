@@ -25,20 +25,12 @@ MyIP.ms Domain Scraper is a sophisticated command-line tool designed to efficien
 ### Prerequisites
 - Go 1.21 or higher
 - Internet connection
-- (Optional) Proxy server for enhanced reliability
 
 ### Building from Source
 
 ```bash
-# Clone the repository
-git clone https://github.com/ayanrajpoot10/myipms-scraper.git
-cd myipms-scraper
-
-# Build the executable
-go build -o myipms-scraper
-
-# Make executable (Linux/macOS)
-chmod +x myipms-scraper
+# Install the scraper
+go install github.com/ayanrajpoot10/myipms-scraper
 ```
 
 ### Download Binary
