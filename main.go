@@ -191,11 +191,6 @@ func handlePageResult(result PageResult, file *os.File, jobs chan<- int, totalDo
 				return false
 			}
 
-			// Update the scraper with fresh cookies
-			newHTTPClient := newHTTPClient(config.ProxyURL, config.ProxyUser, config.ProxyPass)
-			scraper.UpdateHTTPClient(newHTTPClient)
-			fmt.Println("Retrying with fresh cookies...")
-
 			// Retry the page
 			if retryCount[result.Page] < maxRetries {
 				retryCount[result.Page]++

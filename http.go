@@ -46,20 +46,17 @@ func newHTTPClient(proxyURL, proxyUser, proxyPass string) *HTTPClient {
 		"User-Agent":       "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/132.0.0.0 Safari/537.36",
 	}
 
-	// Use default cookies constant
 	var cookies []*http.Cookie
 	for name, value := range DefaultCookies {
 		cookies = append(cookies, &http.Cookie{Name: name, Value: value})
 	}
 
-	// Create transport with optional proxy support
 	transport := &http.Transport{
 		TLSClientConfig: &tls.Config{
 			InsecureSkipVerify: true,
 		},
 	}
 
-	// Configure proxy if provided
 	if proxyURL != "" {
 		proxyURLParsed, err := url.Parse(proxyURL)
 		if err != nil {
@@ -76,7 +73,7 @@ func newHTTPClient(proxyURL, proxyUser, proxyPass string) *HTTPClient {
 
 	return &HTTPClient{
 		client: &http.Client{
-			Timeout:   30 * time.Second, // Reduced from 60s to 30s for faster debugging
+			Timeout:   30 * time.Second,
 			Transport: transport,
 		},
 		headers: headers,
@@ -177,9 +174,4 @@ func (s *Scraper) fetchPage(page int) ([]string, error) {
 	}
 
 	return domains, nil
-}
-
-// UpdateHTTPClient updates the HTTP client (useful when cookies are refreshed)
-func (s *Scraper) UpdateHTTPClient(httpClient *HTTPClient) {
-	s.httpClient = httpClient
 }
