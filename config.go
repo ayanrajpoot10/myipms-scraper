@@ -174,20 +174,18 @@ func parseCIDR(cidr string) (string, string, error) {
 		return "", "", fmt.Errorf("invalid CIDR notation: %v", err)
 	}
 
-	firstIP := ipNet.IP
-	lastIP := make(net.IP, len(firstIP))
-	copy(lastIP, firstIP)
+	first, last := ipNet.IP, make(net.IP, len(ipNet.IP))
+	copy(last, first)
 
 	for i, b := range ipNet.Mask {
-		lastIP[i] |= ^b
+		last[i] |= ^b
 	}
 
-	if firstIP.To4() != nil {
-		firstIP = firstIP.To4()
-		lastIP = lastIP.To4()
+	if first.To4() != nil {
+		first, last = first.To4(), last.To4()
 	}
 
-	return firstIP.String(), lastIP.String(), nil
+	return first.String(), last.String(), nil
 }
 
 // parseProxyURL parses proxy URL using net/url and returns base URL, user, and password
@@ -216,92 +214,83 @@ func parseProxyURL(proxyURL string) (string, string, string, error) {
 }
 
 // validateAndResolveFilters validates the input filters and resolves them to IDs
-func validateAndResolveFilters(config *Config) (*Filter, error) {
+func validateAndResolveFilters(c *Config) (*Filter, error) {
 	filter := &Filter{}
 
-	if config.StartPage < 1 {
-		return nil, fmt.Errorf("start page must be a positive integer (current: %d)", config.StartPage)
+	if c.StartPage < 1 {
+		return nil, fmt.Errorf("start page must be >= 1")
 	}
 
-	if config.Workers < 1 {
-		return nil, fmt.Errorf("workers count must be at least 1 (current: %d)", config.Workers)
-	}
-	if config.Workers > 10 {
-		return nil, fmt.Errorf("workers count should not exceed 10 to avoid server overload (current: %d)", config.Workers)
+	if c.Workers < 1 || c.Workers > 10 {
+		return nil, fmt.Errorf("workers must be between 1 and 10")
 	}
 
-	if config.Delay < 0 {
-		return nil, fmt.Errorf("delay must be non-negative (current: %d)", config.Delay)
+	if c.Delay < 0 {
+		return nil, fmt.Errorf("delay must be non-negative")
 	}
 
-	if config.ProxyURL != "" {
-		baseURL, user, pass, err := parseProxyURL(config.ProxyURL)
+	if c.ProxyURL != "" {
+		base, u, p, err := parseProxyURL(c.ProxyURL)
 		if err != nil {
 			return nil, err
 		}
 
-		config.ProxyURL = baseURL
-		if user != "" {
-			config.ProxyUser = user
-		}
-		if pass != "" {
-			config.ProxyPass = pass
-		}
+		c.ProxyURL, c.ProxyUser, c.ProxyPass = base, u, p
 	}
 
-	if config.DNSRecord != "" {
+	if c.DNSRecord != "" {
 		var exists bool
-		filter.DNSID, exists = dns[config.DNSRecord]
+		filter.DNSID, exists = dns[c.DNSRecord]
 		if !exists {
-			return nil, OptionError{Kind: "DNS", Input: config.DNSRecord}
+			return nil, OptionError{Kind: "DNS", Input: c.DNSRecord}
 		}
-		filter.DNSName = config.DNSRecord
+		filter.DNSName = c.DNSRecord
 	}
 
-	if config.Host != "" {
+	if c.Host != "" {
 		var exists bool
-		filter.HostID, exists = hosts[config.Host]
+		filter.HostID, exists = hosts[c.Host]
 		if !exists {
-			return nil, OptionError{Kind: "host", Input: config.Host}
+			return nil, OptionError{Kind: "host", Input: c.Host}
 		}
-		filter.HostName = config.Host
+		filter.HostName = c.Host
 	}
 
-	if config.Owner != "" {
+	if c.Owner != "" {
 		var exists bool
-		filter.OwnerID, exists = owners[config.Owner]
+		filter.OwnerID, exists = owners[c.Owner]
 		if !exists {
-			return nil, OptionError{Kind: "owner", Input: config.Owner}
+			return nil, OptionError{Kind: "owner", Input: c.Owner}
 		}
-		filter.OwnerName = config.Owner
+		filter.OwnerName = c.Owner
 	}
 
-	if config.Country != "" {
+	if c.Country != "" {
 		var exists bool
-		filter.CountryCode, exists = countries[config.Country]
+		filter.CountryCode, exists = countries[c.Country]
 		if !exists {
-			return nil, OptionError{Kind: "country", Input: config.Country}
+			return nil, OptionError{Kind: "country", Input: c.Country}
 		}
-		filter.CountryName = config.Country
+		filter.CountryName = c.Country
 	}
 
-	if config.URLFilter != "" {
-		filter.URLFilter = config.URLFilter
+	if c.URLFilter != "" {
+		filter.URLFilter = c.URLFilter
 	}
 
-	if config.RankRange.From != 0 && config.RankRange.To != 0 {
-		filter.RankFrom = config.RankRange.From
-		filter.RankTo = config.RankRange.To
+	if c.RankRange.From != 0 && c.RankRange.To != 0 {
+		filter.RankFrom = c.RankRange.From
+		filter.RankTo = c.RankRange.To
 	}
 
-	if config.IPRange.From != nil && config.IPRange.To != nil {
-		filter.IPFrom = config.IPRange.From.String()
-		filter.IPTo = config.IPRange.To.String()
+	if c.IPRange.From != nil && c.IPRange.To != nil {
+		filter.IPFrom = c.IPRange.From.String()
+		filter.IPTo = c.IPRange.To.String()
 	}
 
-	if config.VisitorsRange.From != 0 && config.VisitorsRange.To != 0 {
-		filter.VisitorsFrom = config.VisitorsRange.From
-		filter.VisitorsTo = config.VisitorsRange.To
+	if c.VisitorsRange.From != 0 && c.VisitorsRange.To != 0 {
+		filter.VisitorsFrom = c.VisitorsRange.From
+		filter.VisitorsTo = c.VisitorsRange.To
 	}
 
 	return filter, nil
@@ -328,16 +317,16 @@ func handleValidationError(err error) {
 
 // suggestOptions provides generic suggestions for unknown options
 func suggestOptions[T any](input string, options map[string]T, label string) {
-	optionNames := make([]string, 0, len(options))
-	for name := range options {
-		optionNames = append(optionNames, name)
+	names := make([]string, 0, len(options))
+	for k := range options {
+		names = append(names, k)
 	}
 
-	bestMatches := findBestMatches(input, optionNames, 3)
-	if len(bestMatches) > 0 {
-		fmt.Println("\nDid you mean one of these?")
-		for i, match := range bestMatches {
-			fmt.Printf("  %d. %s\n", i+1, match)
+	best := findBestMatches(input, names, 3)
+	if len(best) > 0 {
+		fmt.Println("\nDid you mean?")
+		for i, s := range best {
+			fmt.Printf("  %d. %s\n", i+1, s)
 		}
 	} else {
 		fmt.Printf("\nNo similar %s found.\n", label)
