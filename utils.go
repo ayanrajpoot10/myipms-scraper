@@ -15,7 +15,6 @@ func levenshteinDistance(a, b string) int {
 		return la
 	}
 
-	// Use only two rows to save memory
 	prev, curr := make([]int, lb+1), make([]int, lb+1)
 	for j := 0; j <= lb; j++ {
 		prev[j] = j
@@ -29,9 +28,9 @@ func levenshteinDistance(a, b string) int {
 				cost = 0
 			}
 			curr[j] = min3(
-				prev[j]+1,    // deletion
-				curr[j-1]+1,  // insertion
-				prev[j-1]+cost, // substitution
+				prev[j]+1,
+				curr[j-1]+1,
+				prev[j-1]+cost,
 			)
 		}
 		prev, curr = curr, prev
@@ -66,7 +65,7 @@ func findBestMatches(input string, options []string, maxResults int) []string {
 		optionLower := strings.ToLower(option)
 
 		if inputLower == optionLower {
-			return []string{option} // exact match shortcut
+			return []string{option}
 		}
 		if strings.Contains(optionLower, inputLower) {
 			matches = append(matches, match{option, 0})
