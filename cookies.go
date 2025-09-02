@@ -19,7 +19,7 @@ const (
 )
 
 // Default cookies as constants
-var DefaultCookies = map[string]string{
+var Cookies = map[string]string{
 	"PHPSESSID":           "le6doi5fo94hv5k2ouqmopd47k",
 	"s2_csrf_cookie_name": "cf0b4574d2c27713afd4b26879597e5d",
 	"s2_theme_ui":         "red",
@@ -27,11 +27,6 @@ var DefaultCookies = map[string]string{
 	"s2_uLang":            "en",
 	"sh":                  "72",
 	"sw":                  "95.4",
-}
-
-// CookieData represents the structure for storing cookies
-type CookieData struct {
-	Cookies map[string]string `json:"cookies"`
 }
 
 // CaptchaClient handles the captcha solving process
@@ -53,7 +48,7 @@ func NewCaptchaClient() *CaptchaClient {
 
 	return &CaptchaClient{
 		client:  client,
-		cookies: DefaultCookies,
+		cookies: Cookies,
 	}
 }
 
@@ -103,8 +98,7 @@ func (c *CaptchaClient) downloadCaptchaImage(captchaURL, filename string) error 
 	}
 	defer file.Close()
 
-	_, err = io.Copy(file, resp.Body)
-	if err != nil {
+	if _, err = io.Copy(file, resp.Body); err != nil {
 		return fmt.Errorf("error writing file: %v", err)
 	}
 
@@ -124,7 +118,6 @@ func solveCaptcha() error {
 	fmt.Println("Starting automated captcha solving process...")
 
 	client := NewCaptchaClient()
-
 	postData := url.Values{
 		"x":                    {"150"},
 		"y":                    {"58"},
@@ -155,13 +148,11 @@ func solveCaptcha() error {
 		}
 
 		filename := "captcha_image.png"
-		err = client.downloadCaptchaImage(captchaURL, filename)
-		if err != nil {
+		if err = client.downloadCaptchaImage(captchaURL, filename); err != nil {
 			return fmt.Errorf("error downloading captcha: %v", err)
 		}
 
-		fileInfo, err := os.Stat(filename)
-		if err != nil {
+		if fileInfo, err := os.Stat(filename); err != nil {
 			fmt.Printf("Error getting file info: %v\n", err)
 		} else {
 			fmt.Printf("Captcha image downloaded as: %s\n", filename)
@@ -195,7 +186,6 @@ func solveCaptcha() error {
 		}
 
 		bodyContent := strings.TrimSpace(string(finalBody))
-
 		if !strings.Contains(bodyContent, "captcha_token") {
 			fmt.Println("Captcha solving process completed successfully!")
 			return nil
@@ -203,7 +193,6 @@ func solveCaptcha() error {
 
 		fmt.Println("Captcha verification failed.")
 		html = string(finalBody)
-
 		fmt.Println("Retrying...")
 	}
 }
