@@ -105,16 +105,6 @@ func displayCategory[T any](title string, items map[string]T, showTotal bool) {
 func showSpecificOptions(owner, country, host, dnsRecord string) {
 	hasAnyFlag := owner != "" || country != "" || host != "" || dnsRecord != ""
 
-	// Show title based on whether specific filters are requested
-	if hasAnyFlag {
-		fmt.Println("Available Options for Specified Filters")
-		fmt.Println("=======================================")
-	} else {
-		fmt.Println("All Available Filter Options")
-		fmt.Println("============================")
-	}
-	fmt.Println()
-
 	// Show countries if requested specifically or if showing all options
 	if country != "" || !hasAnyFlag {
 		displayCategory("COUNTRIES", countries, hasAnyFlag)
