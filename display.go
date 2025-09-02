@@ -6,121 +6,75 @@ import (
 	"strings"
 )
 
-// showHelp displays the help message
+// showHelp displays the help message.
 func showHelp() {
-	fmt.Println("Scrapes domain lists from myip.ms with various filtering options.")
-	fmt.Println()
+	sections := map[string][]string{
+		"DESCRIPTION": {
+			"Scrapes domain lists from myip.ms with various filtering options.",
+		},
+		"USAGE": {
+			"scraper [OPTIONS]",
+		},
+		"FILTER OPTIONS": {
+			"-country <code>    Filter by country (e.g., USA, UK, JP)",
+			"-owner <name>      Filter by hosting provider (e.g., \"Cloudflare, Inc\")",
+			"-host <name>       Filter by specific host",
+			"-dns <record>      Filter by DNS record",
+			"-url <text>        Filter by URL containing specific text (e.g., wiki, blog)",
+			"-rank <range>      Filter by popularity ranking range (e.g., 10-20)",
+			"-ip <range>        Filter by IP address range (e.g., 104.16.0.0-104.16.255.255 or 192.168.0.0/24)",
+			"-visitors <range>  Filter by visitor count range (e.g., 1000-20000)",
+		},
+		"OUTPUT OPTIONS": {
+			"-output <file>     Output filename (default: domains.txt)",
+			"-pages <num>       Max pages to scrape (0 = unlimited, default: unlimited)",
+			"-start <num>       Starting page number (default: 1)",
+		},
+		"CONCURRENCY OPTIONS": {
+			"-workers <num>     Number of concurrent workers (default: 3, max: 10)",
+			"-delay <ms>        Delay between requests in milliseconds (default: 500ms)",
+			"                   Use -workers=1 for sequential processing",
+		},
+		"PROXY OPTIONS": {
+			"-proxy <url>       Proxy URL with optional authentication",
+			"                   Format: protocol://host:port[@user:pass]",
+			"                   Examples:",
+			"                     http://proxy.com:8080",
+			"                     http://proxy.com:8080@user:pass",
+			"                     socks5://127.0.0.1:9050",
+		},
+		"OTHER": {
+			"-help             Show this help message",
+			"-list             Show all available options (or specific options with filter flags)",
+		},
+		"NOTES": {
+			"• All filter options can be combined",
+			"• Range filters use 'from-to' format (e.g., 10-20, 1000-5000)",
+			"• Range values must be positive integers (from ≤ to)",
+			"• IP ranges support both 'from-to' and CIDR (e.g., 192.168.0.0/24)",
+			"• Quotes required for CIDR in shells: -ip=\"192.168.0.0/24\"",
+			"• Start page allows resuming scraping from a specific page",
+			"• Proxy format: protocol://host:port[@user:pass]",
+			"• Supported protocols: HTTP, HTTPS, SOCKS5",
+			"• Higher worker count = faster scraping but may trigger rate limits",
+			"• Use delay to respect server limits",
+			"• If scraping fails, change IP, or use proxy",
+		},
+	}
 
-	fmt.Println("USAGE:")
-	fmt.Println("  scraper [OPTIONS]")
-	fmt.Println()
+	// Print sections in order
+	order := []string{
+		"DESCRIPTION", "USAGE", "FILTER OPTIONS", "OUTPUT OPTIONS",
+		"CONCURRENCY OPTIONS", "PROXY OPTIONS", "OTHER", "NOTES",
+	}
 
-	fmt.Println("FILTER OPTIONS:")
-	fmt.Println("  -country <code>    Filter by country (e.g., USA, UK, JP)")
-	fmt.Println("  -owner <name>      Filter by hosting provider (e.g., \"Cloudflare, Inc\")")
-	fmt.Println("  -host <name>       Filter by specific host")
-	fmt.Println("  -dns <record>      Filter by DNS record")
-	fmt.Println("  -url <text>        Filter by URL containing specific text (e.g., wiki, blog)")
-	fmt.Println("  -rank <range>      Filter by popularity ranking range (e.g., 10-20)")
-	fmt.Println("  -ip <range>        Filter by IP address range (e.g., 104.16.0.0-104.16.255.255 or 192.168.0.0/24)")
-	fmt.Println("  -visitors <range>  Filter by visitor count range (e.g., 1000-20000)")
-	fmt.Println()
-
-	fmt.Println("OUTPUT OPTIONS:")
-	fmt.Println("  -output <file>     Output filename (default: domains.txt)")
-	fmt.Println("  -pages <num>       Max pages to scrape (0 = unlimited, default: unlimited)")
-	fmt.Println("  -start <num>       Starting page number (default: 1)")
-	fmt.Println()
-
-	fmt.Println("CONCURRENCY OPTIONS:")
-	fmt.Println("  -workers <num>     Number of concurrent workers (default: 3, max: 10)")
-	fmt.Println("  -delay <ms>        Delay between requests in milliseconds (default: 500ms)")
-	fmt.Println("                     Use -workers=1 for sequential processing")
-	fmt.Println()
-
-	fmt.Println("PROXY OPTIONS:")
-	fmt.Println("  -proxy <url>       Proxy URL with optional authentication")
-	fmt.Println("                     Format: protocol://host:port[@user:pass]")
-	fmt.Println("                     Examples: http://proxy.com:8080")
-	fmt.Println("                              http://proxy.com:8080@user:pass")
-	fmt.Println("                              socks5://127.0.0.1:9050")
-	fmt.Println()
-
-	fmt.Println("OTHER:")
-	fmt.Println("  -help             Show this help message")
-	fmt.Println("  -list             Show all available options (or specific options when used with filter flags)")
-	fmt.Println()
-
-	fmt.Println("EXAMPLES:")
-	fmt.Println("  Basic usage:")
-	fmt.Println("    scraper                                    # Get top domains globally")
-	fmt.Println("    scraper -country=USA                       # Get domains in USA")
-	fmt.Println("    scraper -owner=\"Cloudflare, Inc\"           # Get Cloudflare domains")
-	fmt.Println("    scraper -url=wiki                          # Get domains with 'wiki' in URL")
-	fmt.Println("    scraper -rank=10-20                        # Get domains ranked 10-20")
-	fmt.Println("    scraper -ip=104.16.0.0-104.16.255.255      # Get domains in IP range")
-	fmt.Println("    scraper -ip=\"192.168.0.0/24\"               # Get domains in CIDR range (use quotes)")
-	fmt.Println("    scraper -ip=\"10.0.0.0/8\"                   # Get domains in large CIDR range")
-	fmt.Println("    scraper -visitors=1000-20000               # Get domains with 1K-20K visitors")
-	fmt.Println()
-
-	fmt.Println("  Combined filters:")
-	fmt.Println("    scraper -country=USA -owner=\"Amazon.com, Inc\"")
-	fmt.Println("    scraper -country=JP -dns=\"01.dnsv.jp\"")
-	fmt.Println("    scraper -owner=\"Google Inc\" -host=\"example-host-1\"")
-	fmt.Println("    scraper -url=wiki -country=USA             # Get USA domains with 'wiki' in URL")
-	fmt.Println("    scraper -url=blog -owner=\"Cloudflare, Inc\" # Get Cloudflare domains with 'blog' in URL")
-	fmt.Println("    scraper -country=USA -rank=10-20           # Get USA domains ranked 10-20")
-	fmt.Println("    scraper -url=shop -rank=1-100              # Get top 100 domains with 'shop' in URL")
-	fmt.Println("    scraper -rank=1-100 -ip=104.16.0.0-104.16.255.255  # Cloudflare IP range, top 100")
-	fmt.Println("    scraper -country=USA -ip=\"8.8.8.0/24\"              # USA domains in Google DNS CIDR")
-	fmt.Println("    scraper -visitors=10000-50000 -country=USA           # USA domains with 10K-50K visitors")
-	fmt.Println("    scraper -rank=1-50 -visitors=100000-1000000          # Top 50 domains with 100K-1M visitors")
-	fmt.Println()
-
-	fmt.Println("  Custom output:")
-	fmt.Println("    scraper -country=USA -output=usa_domains.txt -pages=50")
-	fmt.Println("    scraper -country=USA -start=5 -pages=10         # Start from page 5, scrape 10 pages")
-	fmt.Println("    scraper -pages=0                                # Scrape unlimited pages (same as default)")
-	fmt.Println()
-
-	fmt.Println("  Concurrent scraping:")
-	fmt.Println("    scraper -workers=5                              # Use 5 concurrent workers")
-	fmt.Println("    scraper -workers=3 -delay=1000                  # 3 workers, 1 second delay")
-	fmt.Println("    scraper -workers=1                              # Sequential processing")
-	fmt.Println("    scraper -country=USA -workers=8 -delay=200      # Fast scraping with rate limiting")
-	fmt.Println()
-
-	fmt.Println("  With proxy:")
-	fmt.Println("    scraper -proxy=http://proxy.example.com:8080")
-	fmt.Println("    scraper -proxy=http://proxy.example.com:8080@username:password")
-	fmt.Println("    scraper -proxy=socks5://127.0.0.1:9050           # Using Tor proxy")
-	fmt.Println("    scraper -country=USA -proxy=http://proxy.com:8080@user:pass")
-	fmt.Println()
-
-	fmt.Println("  List available options:")
-	fmt.Println("    scraper --list                             # Show all available options")
-	fmt.Println("    scraper -owner=\"\" --list                   # Show only owner options")
-	fmt.Println("    scraper -country=\"\" --list                 # Show only country options")
-	fmt.Println("    scraper -dns=\"\" --list                     # Show only DNS options")
-	fmt.Println()
-
-	fmt.Println("NOTES:")
-	fmt.Println("  • All filter options can be combined")
-	fmt.Println("  • Range filters use the format 'from-to' (e.g., 10-20, 1000-5000)")
-	fmt.Println("  • Range values must be positive integers (from ≤ to)")
-	fmt.Println("  • IP addresses must be valid IPv4 or IPv6 format")
-	fmt.Println("  • IP ranges support both 'from-to' format and CIDR notation (e.g., 192.168.0.0/24)")
-	fmt.Println("  • Use quotes around CIDR notation in shell commands (e.g., -ip=\"192.168.0.0/24\")")
-	fmt.Println("  • Start page allows resuming scraping from a specific page")
-	fmt.Println("  • Proxy format: protocol://host:port[@user:pass] (auth optional)")
-	fmt.Println("  • Supported protocols: HTTP, HTTPS, and SOCKS5")
-	fmt.Println("  • Concurrent scraping uses multiple workers for faster results")
-	fmt.Println("  • Higher worker count = faster scraping, but may trigger rate limits")
-	fmt.Println("  • Use appropriate delay between requests to respect server limits")
-	fmt.Println("  • First run will prompt for cookies (required for authentication)")
-	fmt.Println("  • Cookies are saved to cookies.json for future runs")
-	fmt.Println("  • If scraping fails, you may need to update cookies, change IP, or use a proxy")
+	for _, section := range order {
+		fmt.Println(section + ":")
+		for _, line := range sections[section] {
+			fmt.Println("  " + line)
+		}
+		fmt.Println()
+	}
 }
 
 // Helper function to display a category of options with int values
