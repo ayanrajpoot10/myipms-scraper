@@ -27,7 +27,6 @@ type Config struct {
 	ProxyPass     string
 	Workers       int
 	Delay         int
-	Help          bool
 	List          bool
 }
 
@@ -72,7 +71,6 @@ func parseFlags() *Config {
 	flag.StringVar(&config.ProxyURL, "proxy", "", "Proxy URL with optional auth (e.g., http://proxy.example.com:8080@user:pass)")
 	flag.IntVar(&config.Workers, "workers", 3, "Number of concurrent workers (default: 3, max recommended: 10)")
 	flag.IntVar(&config.Delay, "delay", 500, "Delay between requests in milliseconds (default: 500ms)")
-	flag.BoolVar(&config.Help, "help", false, "Show help message")
 	flag.BoolVar(&config.List, "list", false, "Show all available options for all filters")
 
 	flag.Parse()

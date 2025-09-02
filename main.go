@@ -18,11 +18,6 @@ type PageResult struct {
 func main() {
 	config := parseFlags()
 
-	if config.Help {
-		showHelp()
-		return
-	}
-
 	if config.List {
 		showSpecificOptions(config.Owner, config.Country, config.Host, config.DNSRecord)
 		return
