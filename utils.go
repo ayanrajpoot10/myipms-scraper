@@ -5,44 +5,47 @@ import (
 	"strings"
 )
 
-// levenshteinDistance calculates the Levenshtein distance between two strings
+// levenshteinDistance calculates the Levenshtein distance between two strings.
 func levenshteinDistance(a, b string) int {
-	if len(a) == 0 {
-		return len(b)
+	la, lb := len(a), len(b)
+	if la == 0 {
+		return lb
 	}
-	if len(b) == 0 {
-		return len(a)
-	}
-
-	matrix := make([][]int, len(a)+1)
-	for i := range matrix {
-		matrix[i] = make([]int, len(b)+1)
-		matrix[i][0] = i
-	}
-	for j := 0; j <= len(b); j++ {
-		matrix[0][j] = j
+	if lb == 0 {
+		return la
 	}
 
-	for i := 1; i <= len(a); i++ {
-		for j := 1; j <= len(b); j++ {
+	// Use only two rows to save memory
+	prev, curr := make([]int, lb+1), make([]int, lb+1)
+	for j := 0; j <= lb; j++ {
+		prev[j] = j
+	}
+
+	for i := 1; i <= la; i++ {
+		curr[0] = i
+		for j := 1; j <= lb; j++ {
 			cost := 1
 			if a[i-1] == b[j-1] {
 				cost = 0
 			}
-			matrix[i][j] = min(
-				matrix[i-1][j]+1,      // deletion
-				matrix[i][j-1]+1,      // insertion
-				matrix[i-1][j-1]+cost, // substitution
+			curr[j] = min3(
+				prev[j]+1,    // deletion
+				curr[j-1]+1,  // insertion
+				prev[j-1]+cost, // substitution
 			)
 		}
+		prev, curr = curr, prev
 	}
-	return matrix[len(a)][len(b)]
+	return prev[lb]
 }
 
-// min returns the minimum of three integers
-func min(a, b, c int) int {
-	if a < b && a < c {
-		return a
+// min3 returns the minimum of three integers.
+func min3(a, b, c int) int {
+	if a < b {
+		if a < c {
+			return a
+		}
+		return c
 	}
 	if b < c {
 		return b
@@ -50,37 +53,29 @@ func min(a, b, c int) int {
 	return c
 }
 
-// findBestMatches finds the best matching strings using Levenshtein distance
+// findBestMatches finds the best matching strings using Levenshtein distance.
 func findBestMatches(input string, options []string, maxResults int) []string {
+	inputLower := strings.ToLower(input)
 	type match struct {
 		value    string
 		distance int
 	}
-
-	var matches []match
-	inputLower := strings.ToLower(input)
+	matches := make([]match, 0, len(options))
 
 	for _, option := range options {
 		optionLower := strings.ToLower(option)
 
 		if inputLower == optionLower {
-			return []string{option}
+			return []string{option} // exact match shortcut
 		}
-
 		if strings.Contains(optionLower, inputLower) {
 			matches = append(matches, match{option, 0})
 			continue
 		}
 
-		distance := levenshteinDistance(inputLower, optionLower)
-
-		maxLen := len(input)
-		if len(option) > maxLen {
-			maxLen = len(option)
-		}
-
-		if distance <= maxLen/2 {
-			matches = append(matches, match{option, distance})
+		dist := levenshteinDistance(inputLower, optionLower)
+		if dist <= max(len(input), len(option))/2 {
+			matches = append(matches, match{option, dist})
 		}
 	}
 
@@ -88,15 +83,21 @@ func findBestMatches(input string, options []string, maxResults int) []string {
 		return matches[i].distance < matches[j].distance
 	})
 
-	var results []string
-	limit := maxResults
-	if len(matches) < limit {
-		limit = len(matches)
+	if len(matches) > maxResults {
+		matches = matches[:maxResults]
 	}
 
-	for i := 0; i < limit; i++ {
-		results = append(results, matches[i].value)
+	results := make([]string, len(matches))
+	for i, m := range matches {
+		results[i] = m.value
 	}
-
 	return results
+}
+
+// max returns the larger of two ints.
+func max(a, b int) int {
+	if a > b {
+		return a
+	}
+	return b
 }
