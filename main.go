@@ -25,7 +25,7 @@ func main() {
 
 	filter, err := validateAndResolveFilters(config)
 	if err != nil {
-		handleValidationError(err, config)
+		handleValidationError(err)
 		return
 	}
 
@@ -51,8 +51,8 @@ func scrapePages(scraper *Scraper, config *Config) error {
 	defer file.Close()
 
 	workers := config.Workers
-	delay := time.Duration(config.Delay) * time.Millisecond
-	
+	delay := config.Delay
+
 	// Display mode information
 	if workers == 1 {
 		fmt.Println("Using sequential scraping (single worker)")
@@ -63,7 +63,7 @@ func scrapePages(scraper *Scraper, config *Config) error {
 	// Create channels for jobs and results
 	jobs := make(chan int, workers*2)
 	results := make(chan PageResult, workers*2)
-	
+
 	// Shared state
 	var totalDomains int
 	var mutex sync.Mutex
@@ -101,14 +101,14 @@ func scrapePages(scraper *Scraper, config *Config) error {
 	}
 
 	if workers > 1 {
-		fmt.Printf("Started %d concurrent workers with %dms delay between requests\n", workers, config.Delay)
+		fmt.Printf("Started %d concurrent workers with %dms delay between requests\n", workers, config.Delay/time.Millisecond)
 	}
 
 	// Process results
 	for result := range results {
 		activeJobs--
-		
-		shouldContinue := handlePageResult(result, file, jobs, &totalDomains, &mutex, 
+
+		shouldContinue := handlePageResult(result, file, jobs, &totalDomains, &mutex,
 			retryCount, maxRetries, scraper, config)
 		if !shouldContinue {
 			noMorePages = true
@@ -156,7 +156,7 @@ func worker(id int, scraper *Scraper, delay time.Duration, jobs <-chan int, resu
 		}
 
 		domains, err := scraper.fetchPage(page)
-		
+
 		result := PageResult{
 			Page:    page,
 			Domains: domains,
@@ -174,16 +174,16 @@ func worker(id int, scraper *Scraper, delay time.Duration, jobs <-chan int, resu
 }
 
 // handlePageResult processes a single page result and handles retries
-func handlePageResult(result PageResult, file *os.File, jobs chan<- int, totalDomains *int, 
+func handlePageResult(result PageResult, file *os.File, jobs chan<- int, totalDomains *int,
 	mutex *sync.Mutex, retryCount map[int]int, maxRetries int, scraper *Scraper, config *Config) bool {
-	
+
 	mutex.Lock()
 	defer mutex.Unlock()
 
 	if result.Error != nil {
 		if strings.Contains(result.Error.Error(), "cookies expired") {
 			fmt.Printf("Page %d: Cookies have expired. Attempting to solve captcha...\n", result.Page)
-			
+
 			captchaErr := solveCaptcha()
 			if captchaErr != nil {
 				fmt.Printf("Failed to solve captcha: %v\n", captchaErr)
@@ -239,6 +239,6 @@ func handlePageResult(result PageResult, file *os.File, jobs chan<- int, totalDo
 
 	*totalDomains += len(result.Domains)
 	fmt.Printf("Page %d: Found %d domains (Total: %d)\n", result.Page, len(result.Domains), *totalDomains)
-	
+
 	return true
 }

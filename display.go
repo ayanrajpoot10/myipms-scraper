@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"sort"
 	"strings"
+	"time"
 )
 
 // showHelp displays the help message.
@@ -16,7 +17,7 @@ func showHelp() {
 			"scraper [OPTIONS]",
 		},
 		"FILTER OPTIONS": {
-			"-country <code>    Filter by country (e.g., USA, UK, JP)",
+			"-country <name>    Filter by country name (e.g., \"United States\", \"United Kingdom\", \"Japan\")",
 			"-owner <name>      Filter by hosting provider (e.g., \"Cloudflare, Inc\")",
 			"-host <name>       Filter by specific host",
 			"-dns <record>      Filter by DNS record",
@@ -77,30 +78,8 @@ func showHelp() {
 	}
 }
 
-// Helper function to display a category of options with int values
-func displayCategoryInt(title string, items map[string]int, showTotal bool) {
-	fmt.Printf("%s:\n", title)
-	fmt.Printf("%s\n", strings.Repeat("-", len(title)+1))
-
-	names := make([]string, 0, len(items))
-	for name := range items {
-		names = append(names, name)
-	}
-	sort.Strings(names)
-
-	for _, name := range names {
-		fmt.Printf("  %s\n", name)
-	}
-
-	if showTotal {
-		fmt.Printf("\nTotal: %d %s\n\n", len(items), strings.ToLower(title))
-	} else {
-		fmt.Println()
-	}
-}
-
-// Helper function to display a category of options with string values
-func displayCategoryString(title string, items map[string]string, showTotal bool) {
+// Helper function to display a category of options with generic values
+func displayCategory[T any](title string, items map[string]T, showTotal bool) {
 	fmt.Printf("%s:\n", title)
 	fmt.Printf("%s\n", strings.Repeat("-", len(title)+1))
 
@@ -138,22 +117,22 @@ func showSpecificOptions(owner, country, host, dnsRecord string) {
 
 	// Show countries if requested specifically or if showing all options
 	if country != "" || !hasAnyFlag {
-		displayCategoryString("COUNTRIES", countries, hasAnyFlag)
+		displayCategory("COUNTRIES", countries, hasAnyFlag)
 	}
 
 	// Show owners if requested specifically or if showing all options
 	if owner != "" || !hasAnyFlag {
-		displayCategoryInt("OWNERS/HOSTING PROVIDERS", owners, hasAnyFlag)
+		displayCategory("OWNERS/HOSTING PROVIDERS", owners, hasAnyFlag)
 	}
 
 	// Show hosts if requested specifically or if showing all options
 	if host != "" || !hasAnyFlag {
-		displayCategoryInt("HOSTS", hosts, hasAnyFlag)
+		displayCategory("HOSTS", hosts, hasAnyFlag)
 	}
 
 	// Show DNS records if requested specifically or if showing all options
 	if dnsRecord != "" || !hasAnyFlag {
-		displayCategoryInt("DNS RECORDS", dns, hasAnyFlag)
+		displayCategory("DNS RECORDS", dns, hasAnyFlag)
 	}
 
 	// Show grand total only when displaying all options
@@ -178,7 +157,7 @@ func displayScrapingFilter(filter *Filter, config *Config) {
 			filters = append(filters, fmt.Sprintf("URL (%s)", filter.URLFilter))
 		}
 		if filter.CountryCode != "" {
-			filters = append(filters, fmt.Sprintf("Country (%s - %s)", filter.CountryCode, filter.CountryName))
+			filters = append(filters, fmt.Sprintf("Country (%s - %s)", filter.CountryName, filter.CountryCode))
 		}
 		if filter.RankFrom > 0 && filter.RankTo > 0 {
 			filters = append(filters, fmt.Sprintf("Rank (%d-%d)", filter.RankFrom, filter.RankTo))
@@ -205,7 +184,7 @@ func displayScrapingFilter(filter *Filter, config *Config) {
 	}
 
 	// Show concurrency configuration
-	concurrencyInfo := fmt.Sprintf("\nConcurrency: %d workers, %dms delay", config.Workers, config.Delay)
+	concurrencyInfo := fmt.Sprintf("\nConcurrency: %d workers, %dms delay", config.Workers, config.Delay/time.Millisecond)
 	if config.Workers == 1 {
 		concurrencyInfo = "\nMode: Sequential (single worker)"
 	}

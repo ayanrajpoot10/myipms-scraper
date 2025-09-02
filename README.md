@@ -43,25 +43,25 @@ Pre-built binaries are available for multiple platforms in the [Releases](https:
 ./myipms-scraper
 
 # Filter by country
-./myipms-scraper -country=USA
+./myipms-scraper -country="United States"
 
 # Filter by hosting provider
 ./myipms-scraper -owner="Cloudflare, Inc"
 
 # Combined filters with custom output
-./myipms-scraper -country=USA -owner="Amazon.com, Inc" -output=aws-usa-domains.txt -pages=10
+./myipms-scraper -country="United States" -owner="Amazon.com, Inc" -output=aws-usa-domains.txt -pages=10
 
 # Fast concurrent scraping
-./myipms-scraper -country=USA -workers=5 -delay=300
+./myipms-scraper -country="United States" -workers=5 -delay=300
 
 # Conservative scraping with single worker (classic mode)
-./myipms-scraper -country=USA -workers=1 -delay=1000
+./myipms-scraper -country="United States" -workers=1 -delay=1000
 ```
 
 ## 📊 Filter Options
 
 ### Geographic Filters
-- **Country**: Filter by country code or name (e.g., `USA`, `United Kingdom`)
+- **Country**: Filter by country name (e.g., `United States`, `United Kingdom`, `Japan`)
 - **IP Range**: Filter by IP address ranges or CIDR blocks
 
 ### Hosting & Infrastructure
@@ -161,8 +161,8 @@ First-time users will be prompted to solve a captcha for authentication. Cookies
 ## 📋 Available Filters
 
 ### Countries (Sample)
-- USA, Canada, United Kingdom, Germany, France, Japan, Australia, Brazil, India, Russia
-- Supports both country codes and full country names
+- United States, Canada, United Kingdom, Germany, France, Japan, Australia, Brazil, India, Russia
+- Only accepts full country names (not country codes)
 
 ### Major Hosting Providers (Sample)
 - Amazon.com, Inc, Cloudflare Inc, Google Inc, Microsoft Corp

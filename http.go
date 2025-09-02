@@ -76,7 +76,7 @@ func newHTTPClient(proxyURL, proxyUser, proxyPass string) *HTTPClient {
 
 	return &HTTPClient{
 		client: &http.Client{
-			Timeout:   60 * time.Second,
+			Timeout:   30 * time.Second, // Reduced from 60s to 30s for faster debugging
 			Transport: transport,
 		},
 		headers: headers,
@@ -171,6 +171,7 @@ func (s *Scraper) fetchPage(page int) ([]string, error) {
 		} else if isIPLimitExceeded(htmlContent) {
 			return nil, fmt.Errorf("IP limit exceeded - you have exceeded page visit limit. Please use proxy/VPN or turn airplane mode on/off if using mobile internet to change IP address")
 		} else {
+			fmt.Println("Response content:")
 			fmt.Println(htmlContent)
 		}
 	}

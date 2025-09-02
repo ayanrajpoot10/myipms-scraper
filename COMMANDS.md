@@ -56,14 +56,9 @@ This comprehensive guide covers all command-line options, usage patterns, and ad
 ### Geographic Filters
 
 #### Country Filter
-Filter domains by country code or country name.
+Filter domains by country name (only full country names accepted).
 
 ```bash
-# By country code (preferred)
-./myipms-scraper -country=USA
-./myipms-scraper -country=GBR
-./myipms-scraper -country=JPN
-
 # By country name (case-sensitive)
 ./myipms-scraper -country="United States"
 ./myipms-scraper -country="United Kingdom"
@@ -73,17 +68,17 @@ Filter domains by country code or country name.
 ./myipms-scraper -country="" --list
 ```
 
-**Popular Country Codes:**
-- `USA` - United States
-- `GBR` - United Kingdom  
-- `DEU` - Germany
-- `FRA` - France
-- `JPN` - Japan
-- `CAN` - Canada
-- `AUS` - Australia
-- `BRA` - Brazil
-- `IND` - India
-- `RUS` - Russia
+**Popular Countries (use full names):**
+- `United States`
+- `United Kingdom`
+- `Germany`
+- `France`
+- `Japan`
+- `Canada`
+- `Australia`
+- `Brazil`
+- `India`
+- `Russia`
 
 ### Hosting & Infrastructure Filters
 
@@ -569,7 +564,7 @@ echo "Scraped $(date): Country=USA, Purpose=Market Research" >> scraping_log.txt
 ### Flag Reference
 | Flag | Type | Description | Example |
 |------|------|-------------|---------|
-| `-country` | string | Filter by country code/name | `-country=USA` |
+| `-country` | string | Filter by country name | `-country="United States"` |
 | `-owner` | string | Filter by hosting provider | `-owner="Cloudflare, Inc"` |
 | `-host` | string | Filter by host | `-host=amazonaws.com` |
 | `-dns` | string | Filter by DNS record | `-dns=ns1.cloudflare.com` |

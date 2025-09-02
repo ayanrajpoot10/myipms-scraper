@@ -20,10 +20,10 @@ const (
 
 // Default cookies as constants
 var DefaultCookies = map[string]string{
-	"PHPSESSID":           "w64p0gu6cdatego5pn9bc0pavd",
-	"s2_csrf_cookie_name": "14a418c9c3be22cb5c9d1ecb099be45b",
+	"PHPSESSID":           "be6doi5fo94hv5k2ouqmopd47k",
+	"s2_csrf_cookie_name": "cf0b4574d2c27713afd4b26879597e5d",
 	"s2_theme_ui":         "red",
-	"s2_uGoo":             "bf531b53aa1246aacc4c9ca44ae7fbaae849b44f",
+	"s2_uGoo":             "w6a162dd67b1968e6349944bcff010fdd63ee724",
 	"s2_uLang":            "en",
 	"sh":                  "72",
 	"sw":                  "95.4",
@@ -129,7 +129,7 @@ func solveCaptcha() error {
 		"x":                    {"150"},
 		"y":                    {"58"},
 		"g_recaptcha_loaded":   {"no"},
-		"captcha_token":        {"3030a682c435137811b1a547881bc70e93f746089e2dc466229537ad5afcf449"},
+		"captcha_token":        {""},
 		"g_recaptcha_response": {""},
 	}
 
