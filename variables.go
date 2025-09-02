@@ -505,7 +505,7 @@ var owners = map[string]int{
         "Zoner Oy": 267438,
 }
 
-// Countries mapping - maps country code to country name
+// Countries mapping - maps country name to country code
 var countries = map[string]string{
         "Afghanistan": "AFG",
         "Aland Islands": "ALA",
