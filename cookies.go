@@ -20,7 +20,7 @@ const (
 
 // Default cookies as constants
 var DefaultCookies = map[string]string{
-	"PHPSESSID":           "be6doi5fo94hv5k2ouqmopd47k",
+	"PHPSESSID":           "le6doi5fo94hv5k2ouqmopd47k",
 	"s2_csrf_cookie_name": "cf0b4574d2c27713afd4b26879597e5d",
 	"s2_theme_ui":         "red",
 	"s2_uGoo":             "w6a162dd67b1968e6349944bcff010fdd63ee724",
@@ -119,7 +119,7 @@ func getUserInput(prompt string) string {
 	return strings.TrimSpace(scanner.Text())
 }
 
-// solveCaptcha handles the complete captcha solving process
+// solveCaptcha handles the complete captcha solving process with retry logic
 func solveCaptcha() error {
 	fmt.Println("Starting automated captcha solving process...")
 
@@ -146,54 +146,64 @@ func solveCaptcha() error {
 
 	html := string(body)
 
-	captchaToken := extractCaptchaToken(html)
-	captchaURL := extractCaptchaURL(html)
+	for {
+		captchaToken := extractCaptchaToken(html)
+		captchaURL := extractCaptchaURL(html)
 
-	fmt.Printf("Captcha Token: %s\n", captchaToken)
-	fmt.Printf("Captcha Image URL: %s\n", captchaURL)
+		if captchaURL == "" || captchaToken == "" {
+			return fmt.Errorf("no captcha image URL or token found")
+		}
 
-	if captchaURL == "" || captchaToken == "" {
-		return fmt.Errorf("no captcha image URL or token found")
+		filename := "captcha_image.png"
+		err = client.downloadCaptchaImage(captchaURL, filename)
+		if err != nil {
+			return fmt.Errorf("error downloading captcha: %v", err)
+		}
+
+		fileInfo, err := os.Stat(filename)
+		if err != nil {
+			fmt.Printf("Error getting file info: %v\n", err)
+		} else {
+			fmt.Printf("Captcha image downloaded as: %s\n", filename)
+			fmt.Printf("Image size: %d bytes\n", fileInfo.Size())
+		}
+
+		fmt.Println("\nPlease check the captcha image and enter the captcha text:")
+		captchaResponse := getUserInput("Enter captcha: ")
+
+		if captchaResponse == "" {
+			return fmt.Errorf("no captcha response provided")
+		}
+
+		finalData := url.Values{
+			"x":                  {"0"},
+			"y":                  {"0"},
+			"g_recaptcha_loaded": {"no"},
+			"captcha_token":      {captchaToken},
+			"p_captcha_response": {captchaResponse},
+		}
+
+		finalResp, err := client.makeRequest("POST", CaptchaFinalURL, finalData)
+		if err != nil {
+			return fmt.Errorf("error submitting captcha: %v", err)
+		}
+		defer finalResp.Body.Close()
+
+		finalBody, err := io.ReadAll(finalResp.Body)
+		if err != nil {
+			return fmt.Errorf("error reading final response: %v", err)
+		}
+
+		bodyContent := strings.TrimSpace(string(finalBody))
+
+		if !strings.Contains(bodyContent, "captcha_token") {
+			fmt.Println("Captcha solving process completed successfully!")
+			return nil
+		}
+
+		fmt.Println("Captcha verification failed.")
+		html = string(finalBody)
+
+		fmt.Println("Retrying...")
 	}
-
-	filename := "captcha_image.png"
-	err = client.downloadCaptchaImage(captchaURL, filename)
-	if err != nil {
-		return fmt.Errorf("error downloading captcha: %v", err)
-	}
-
-	fileInfo, err := os.Stat(filename)
-	if err != nil {
-		fmt.Printf("Error getting file info: %v\n", err)
-	} else {
-		fmt.Printf("Captcha image downloaded as: %s\n", filename)
-		fmt.Printf("Image size: %d bytes\n", fileInfo.Size())
-	}
-
-	fmt.Println("\nPlease check the captcha image and enter the captcha text:")
-	captchaResponse := getUserInput("Enter captcha: ")
-
-	if captchaResponse == "" {
-		return fmt.Errorf("no captcha response provided")
-	}
-
-	finalData := url.Values{
-		"x":                  {"0"},
-		"y":                  {"0"},
-		"g_recaptcha_loaded": {"no"},
-		"captcha_token":      {captchaToken},
-		"p_captcha_response": {captchaResponse},
-	}
-
-	finalResp, err := client.makeRequest("POST", CaptchaFinalURL, finalData)
-	if err != nil {
-		return fmt.Errorf("error submitting captcha: %v", err)
-	}
-	defer finalResp.Body.Close()
-
-	fmt.Printf("\nFinal Response Status: %d\n", finalResp.StatusCode)
-	fmt.Printf("Final Response URL: %s\n", finalResp.Request.URL.String())
-
-	fmt.Println("Captcha solving process completed successfully!")
-	return nil
 }
