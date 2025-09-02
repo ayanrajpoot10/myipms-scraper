@@ -17,46 +17,32 @@ type IntRange struct {
 }
 
 // String returns the string representation of IntRange
-func (ir IntRange) String() string {
-	if ir.From == 0 && ir.To == 0 {
+func (r IntRange) String() string {
+	if r.From == 0 && r.To == 0 {
 		return ""
 	}
-	return fmt.Sprintf("%d-%d", ir.From, ir.To)
+	return fmt.Sprintf("%d-%d", r.From, r.To)
 }
 
 // Set parses a string in format "from-to" and sets the IntRange
-func (ir *IntRange) Set(value string) error {
-	if value == "" {
-		ir.From = 0
-		ir.To = 0
+func (r *IntRange) Set(s string) error {
+	if s == "" {
+		*r = IntRange{}
 		return nil
 	}
 
-	parts := strings.Split(value, "-")
+	parts := strings.Split(s, "-")
 	if len(parts) != 2 {
 		return fmt.Errorf("invalid range format, expected 'from-to' (e.g., '10-20')")
 	}
 
-	from, err := strconv.Atoi(strings.TrimSpace(parts[0]))
-	if err != nil {
-		return fmt.Errorf("invalid 'from' value: %v", err)
+	from, err1 := strconv.Atoi(strings.TrimSpace(parts[0]))
+	to, err2 := strconv.Atoi(strings.TrimSpace(parts[1]))
+	if err1 != nil || err2 != nil || from <= 0 || to <= 0 || from > to {
+		return fmt.Errorf("invalid range: %q", s)
 	}
 
-	to, err := strconv.Atoi(strings.TrimSpace(parts[1]))
-	if err != nil {
-		return fmt.Errorf("invalid 'to' value: %v", err)
-	}
-
-	if from <= 0 || to <= 0 {
-		return fmt.Errorf("range values must be positive integers")
-	}
-
-	if from > to {
-		return fmt.Errorf("'from' value (%d) cannot be greater than 'to' value (%d)", from, to)
-	}
-
-	ir.From = from
-	ir.To = to
+	r.From, r.To = from, to
 	return nil
 }
 
@@ -66,57 +52,46 @@ type IPRange struct {
 }
 
 // String returns the string representation of IPRange
-func (ipr IPRange) String() string {
-	if ipr.From == nil && ipr.To == nil {
+func (r IPRange) String() string {
+	if r.From == nil && r.To == nil {
 		return ""
 	}
-	return fmt.Sprintf("%s-%s", ipr.From.String(), ipr.To.String())
+	return fmt.Sprintf("%s-%s", r.From, r.To)
 }
 
 // Set parses a string in format "from-to" or CIDR and sets the IPRange
-func (ipr *IPRange) Set(value string) error {
-	if value == "" {
-		ipr.From = nil
-		ipr.To = nil
+func (r *IPRange) Set(s string) error {
+	if s == "" {
+		*r = IPRange{}
 		return nil
 	}
 
-	if strings.Contains(value, "/") {
-		fromStr, toStr, err := parseCIDR(value)
+	if strings.Contains(s, "/") {
+		from, to, err := parseCIDR(s)
 		if err != nil {
 			return err
 		}
-		ipr.From = net.ParseIP(fromStr)
-		ipr.To = net.ParseIP(toStr)
+		r.From, r.To = net.ParseIP(from), net.ParseIP(to)
 		return nil
 	}
 
-	parts := strings.Split(value, "-")
+	parts := strings.Split(s, "-")
 	if len(parts) != 2 {
-		return fmt.Errorf("invalid IP range format, expected 'from-to' (e.g., '104.16.0.0-104.16.255.255') or CIDR notation (e.g., '192.168.0.0/24')")
+		return fmt.Errorf("invalid IP range or CIDR: %q", s)
 	}
 
-	ipFrom := strings.TrimSpace(parts[0])
-	ipTo := strings.TrimSpace(parts[1])
-
-	from := net.ParseIP(ipFrom)
-	if from == nil {
-		return fmt.Errorf("invalid IP address format for 'from': %s", ipFrom)
+	from, to := net.ParseIP(strings.TrimSpace(parts[0])), net.ParseIP(strings.TrimSpace(parts[1]))
+	if from == nil || to == nil {
+		return fmt.Errorf("invalid IP range: %q", s)
 	}
 
-	to := net.ParseIP(ipTo)
-	if to == nil {
-		return fmt.Errorf("invalid IP address format for 'to': %s", ipTo)
-	}
-
-	ipr.From = from
-	ipr.To = to
+	r.From, r.To = from, to
 	return nil
 }
 
 // OptionError represents an error for unknown options
 type OptionError struct {
-	Kind  string // "dns", "host", "owner", "country"
+	Kind  string
 	Input string
 }
 
@@ -172,21 +147,21 @@ func parseFlags() *Config {
 		showHelp()
 	}
 
-	flag.StringVar(&config.Owner, "owner", "", "Enable owner filter with specified owner name")
-	flag.StringVar(&config.Country, "country", "", "Enable country filter with specified country name")
-	flag.StringVar(&config.Host, "host", "", "Enable host filter with specified host name")
-	flag.StringVar(&config.DNSRecord, "dns", "", "Enable DNS filter with specified DNS record")
-	flag.StringVar(&config.URLFilter, "url", "", "Enable URL filter to search for domains containing specific text in URL")
-	flag.Var(&config.RankRange, "rank", "Filter by popularity ranking range (format: from-to, e.g., 10-20)")
-	flag.Var(&config.IPRange, "ip", "Filter by IP address range (format: from-to or CIDR, e.g., 104.16.0.0-104.16.255.255 or 192.168.0.0/24)")
-	flag.Var(&config.VisitorsRange, "visitors", "Filter by visitor count range (format: from-to, e.g., 1000-20000)")
-	flag.StringVar(&config.Output, "output", "domains.txt", "Output filename")
-	flag.IntVar(&config.MaxPages, "pages", 0, "Maximum number of pages to scrape (0 = unlimited, default: unlimited)")
-	flag.IntVar(&config.StartPage, "start", 1, "Starting page number (default: 1)")
-	flag.StringVar(&config.ProxyURL, "proxy", "", "Proxy URL with optional auth (e.g., http://proxy.example.com:8080@user:pass)")
-	flag.IntVar(&config.Workers, "workers", 3, "Number of concurrent workers (default: 3, max recommended: 10)")
-	flag.DurationVar(&config.Delay, "delay", 500*time.Millisecond, "Delay between requests (default: 500ms)")
-	flag.BoolVar(&config.List, "list", false, "Show all available options for all filters")
+	flag.StringVar(&config.Owner, "owner", "", "Owner filter")
+	flag.StringVar(&config.Country, "country", "", "Country filter")
+	flag.StringVar(&config.Host, "host", "", "Host filter")
+	flag.StringVar(&config.DNSRecord, "dns", "", "DNS filter")
+	flag.StringVar(&config.URLFilter, "url", "", "URL filter substring")
+	flag.Var(&config.RankRange, "rank", "Popularity ranking range (from-to)")
+	flag.Var(&config.IPRange, "ip", "IP range (from-to or CIDR)")
+	flag.Var(&config.VisitorsRange, "visitors", "Visitors range (from-to)")
+	flag.StringVar(&config.Output, "output", "domains.txt", "Output file")
+	flag.IntVar(&config.MaxPages, "pages", 0, "Max pages (0=unlimited)")
+	flag.IntVar(&config.StartPage, "start", 1, "Starting page")
+	flag.StringVar(&config.ProxyURL, "proxy", "", "Proxy URL (http[s]/socks5://user:pass@host:port)")
+	flag.IntVar(&config.Workers, "workers", 3, "Concurrent workers (1-10)")
+	flag.DurationVar(&config.Delay, "delay", 500*time.Millisecond, "Delay between requests")
+	flag.BoolVar(&config.List, "list", false, "List all available options")
 
 	flag.Parse()
 	return config
@@ -278,7 +253,7 @@ func validateAndResolveFilters(config *Config) (*Filter, error) {
 		var exists bool
 		filter.DNSID, exists = dns[config.DNSRecord]
 		if !exists {
-			return nil, OptionError{Kind: "DNS record", Input: config.DNSRecord}
+			return nil, OptionError{Kind: "DNS", Input: config.DNSRecord}
 		}
 		filter.DNSName = config.DNSRecord
 	}
@@ -338,8 +313,8 @@ func handleValidationError(err error) {
 
 	if Err, ok := err.(OptionError); ok {
 		switch Err.Kind {
-		case "DNS record":
-			suggestOptions(Err.Input, dns, "DNS records")
+		case "DNS":
+			suggestOptions(Err.Input, dns, "DNS")
 		case "host":
 			suggestOptions(Err.Input, hosts, "hosts")
 		case "owner":
