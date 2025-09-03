@@ -37,10 +37,10 @@ func showHelp() {
 		},
 		"PROXY OPTIONS": {
 			"-proxy <url>       Proxy URL with optional authentication",
-			"                   Format: protocol://host:port[@user:pass]",
+			"                   Format: protocol://user:pass@host:port",
 			"                   Examples:",
 			"                     http://proxy.com:8080",
-			"                     http://proxy.com:8080@user:pass",
+			"                     http://user:pass@proxy.com:8080",
 			"                     socks5://127.0.0.1:9050",
 		},
 		"OTHER": {
