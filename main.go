@@ -53,13 +53,6 @@ func scrapePages(scraper *Scraper, config *Config) error {
 	workers := config.Workers
 	delay := config.Delay
 
-	// Display mode information
-	if workers == 1 {
-		fmt.Println("Using sequential scraping (single worker)")
-	} else {
-		fmt.Printf("Using concurrent scraping with %d workers\n", workers)
-	}
-
 	// Create channels for jobs and results
 	jobs := make(chan int, workers*2)
 	results := make(chan PageResult, workers*2)
@@ -144,7 +137,6 @@ func worker(id int, scraper *Scraper, delay time.Duration, jobs <-chan int, resu
 	defer wg.Done()
 
 	for page := range jobs {
-		// Add delay to respect server rate limits
 		if delay > 0 {
 			time.Sleep(delay)
 		}
@@ -184,7 +176,7 @@ func handlePageResult(result PageResult, file *os.File, jobs chan<- int, totalDo
 		if strings.Contains(result.Error.Error(), "cookies expired") {
 			fmt.Printf("Page %d: Cookies have expired. Attempting to solve captcha...\n", result.Page)
 
-			captchaErr := solveCaptcha()
+			captchaErr := solveCaptcha(scraper.httpClient)
 			if captchaErr != nil {
 				fmt.Printf("Failed to solve captcha: %v\n", captchaErr)
 				fmt.Println("Please restart the program and try again.")

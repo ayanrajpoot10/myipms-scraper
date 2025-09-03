@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"sort"
 	"strings"
-	"time"
 )
 
 // showHelp displays the help message.
@@ -46,10 +45,10 @@ func showHelp() {
 		},
 		"OTHER": {
 			"-help             Show this help message",
-			"-list             Show all available options (or specific options with filter flags)",
+			"-list             Show all available options (or specific options with f flags)",
 		},
 		"NOTES": {
-			"• All filter options can be combined",
+			"• All f options can be combined",
 			"• Range filters use 'from-to' format (e.g., 10-20, 1000-5000)",
 			"• Range values must be positive integers (from ≤ to)",
 			"• IP ranges support both 'from-to' and CIDR (e.g., 192.168.0.0/24)",
@@ -63,7 +62,6 @@ func showHelp() {
 		},
 	}
 
-	// Print sections in order
 	order := []string{
 		"DESCRIPTION", "USAGE", "FILTER OPTIONS", "OUTPUT OPTIONS",
 		"CONCURRENCY OPTIONS", "PROXY OPTIONS", "OTHER", "NOTES",
@@ -100,32 +98,27 @@ func displayCategory[T any](title string, items map[string]T, showTotal bool) {
 	}
 }
 
-// showSpecificOptions displays filter options based on provided flags
+// showSpecificOptions displays f options based on provided flags
 // If no flags are provided, shows all available options
 func showSpecificOptions(owner, country, host, dnsRecord string) {
 	hasAnyFlag := owner != "" || country != "" || host != "" || dnsRecord != ""
 
-	// Show countries if requested specifically or if showing all options
 	if country != "" || !hasAnyFlag {
 		displayCategory("COUNTRIES", countries, hasAnyFlag)
 	}
 
-	// Show owners if requested specifically or if showing all options
 	if owner != "" || !hasAnyFlag {
 		displayCategory("OWNERS/HOSTING PROVIDERS", owners, hasAnyFlag)
 	}
 
-	// Show hosts if requested specifically or if showing all options
 	if host != "" || !hasAnyFlag {
 		displayCategory("HOSTS", hosts, hasAnyFlag)
 	}
 
-	// Show DNS records if requested specifically or if showing all options
 	if dnsRecord != "" || !hasAnyFlag {
 		displayCategory("DNS RECORDS", dns, hasAnyFlag)
 	}
 
-	// Show grand total only when displaying all options
 	if !hasAnyFlag {
 		fmt.Printf("Total: %d countries, %d owners, %d hosts, %d DNS records\n",
 			len(countries), len(owners), len(hosts), len(dns))
@@ -133,54 +126,47 @@ func showSpecificOptions(owner, country, host, dnsRecord string) {
 }
 
 // displayScrapingFilter shows the current scraping configuration
-func displayScrapingFilter(filter *Filter, config *Config) {
+func displayScrapingFilter(f *Filter, c *Config) {
 	fmt.Printf("Filter: ")
-	if filter.DNSName != "" {
-		fmt.Printf("DNS (%s - ID: %d)", filter.DNSName, filter.DNSID)
-	} else if filter.HostName != "" {
-		fmt.Printf("Host (%s - ID: %d)", filter.HostName, filter.HostID)
-	} else if filter.CountryCode == "" && filter.OwnerName == "" && filter.URLFilter == "" && filter.RankFrom == 0 && filter.IPFrom == "" && filter.VisitorsFrom == 0 {
+	if f.DNSName != "" {
+		fmt.Printf("DNS (%s - ID: %d)", f.DNSName, f.DNSID)
+	} else if f.HostName != "" {
+		fmt.Printf("Host (%s - ID: %d)", f.HostName, f.HostID)
+	} else if f.CountryCode == "" && f.OwnerName == "" && f.URLFilter == "" && f.RankFrom == 0 && f.IPFrom == "" && f.VisitorsFrom == 0 {
 		fmt.Print("Top Domains (default)")
 	} else {
 		var filters []string
-		if filter.URLFilter != "" {
-			filters = append(filters, fmt.Sprintf("URL (%s)", filter.URLFilter))
+		if f.URLFilter != "" {
+			filters = append(filters, fmt.Sprintf("URL (%s)", f.URLFilter))
 		}
-		if filter.CountryCode != "" {
-			filters = append(filters, fmt.Sprintf("Country (%s - %s)", filter.CountryName, filter.CountryCode))
+		if f.CountryCode != "" {
+			filters = append(filters, fmt.Sprintf("Country (%s - %s)", f.CountryName, f.CountryCode))
 		}
-		if filter.RankFrom > 0 && filter.RankTo > 0 {
-			filters = append(filters, fmt.Sprintf("Rank (%d-%d)", filter.RankFrom, filter.RankTo))
+		if f.RankFrom > 0 && f.RankTo > 0 {
+			filters = append(filters, fmt.Sprintf("Rank (%d-%d)", f.RankFrom, f.RankTo))
 		}
-		if filter.IPFrom != "" && filter.IPTo != "" {
-			filters = append(filters, fmt.Sprintf("IP Range (%s-%s)", filter.IPFrom, filter.IPTo))
+		if f.IPFrom != "" && f.IPTo != "" {
+			filters = append(filters, fmt.Sprintf("IP Range (%s-%s)", f.IPFrom, f.IPTo))
 		}
-		if filter.VisitorsFrom > 0 && filter.VisitorsTo > 0 {
-			filters = append(filters, fmt.Sprintf("Visitors (%d-%d)", filter.VisitorsFrom, filter.VisitorsTo))
+		if f.VisitorsFrom > 0 && f.VisitorsTo > 0 {
+			filters = append(filters, fmt.Sprintf("Visitors (%d-%d)", f.VisitorsFrom, f.VisitorsTo))
 		}
-		if filter.OwnerName != "" {
-			filters = append(filters, fmt.Sprintf("Owner (%s - ID: %d)", filter.OwnerName, filter.OwnerID))
+		if f.OwnerName != "" {
+			filters = append(filters, fmt.Sprintf("Owner (%s - ID: %d)", f.OwnerName, f.OwnerID))
 		}
 		fmt.Print(strings.Join(filters, " + "))
 	}
 
-	// Show proxy configuration if enabled
 	proxyInfo := ""
-	if config.ProxyURL != "" {
-		proxyInfo = fmt.Sprintf("\nProxy: %s", config.ProxyURL)
-		if config.ProxyUser != "" {
-			proxyInfo += fmt.Sprintf(" (authenticated as %s)", config.ProxyUser)
+	if c.ProxyURL != "" {
+		proxyInfo = fmt.Sprintf("\nProxy: %s", c.ProxyURL)
+		if c.ProxyUser != "" {
+			proxyInfo += fmt.Sprintf(" (authenticated as %s)", c.ProxyUser)
 		}
 	}
 
-	// Show concurrency configuration
-	concurrencyInfo := fmt.Sprintf("\nConcurrency: %d workers, %dms delay", config.Workers, config.Delay/time.Millisecond)
-	if config.Workers == 1 {
-		concurrencyInfo = "\nMode: Sequential (single worker)"
-	}
-
-	fmt.Printf("\nOutput: %s\nPages: %s (starting from page %d)%s%s\n",
-		config.Output, getPagesDisplay(config.MaxPages), config.StartPage, proxyInfo, concurrencyInfo)
+	fmt.Printf("\nOutput: %s\nPages: %s (starting from page %d)%s\n",
+		c.Output, getPagesDisplay(c.MaxPages), c.StartPage, proxyInfo)
 }
 
 // getPagesDisplay returns the appropriate display string for MaxPages

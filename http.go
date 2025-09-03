@@ -6,6 +6,7 @@ import (
 	"io"
 	"net/http"
 	"net/url"
+	"os"
 	"strings"
 	"time"
 )
@@ -13,6 +14,16 @@ import (
 var requestData = url.Values{
 	"getpage": []string{"yes"},
 	"lang":    []string{"en"},
+}
+
+var Cookies = map[string]string{
+	"PHPSESSID":           "le6doi5fo94hv5k2ouqmopd47k",
+	"s2_csrf_cookie_name": "cf0b4574d2c27713afd4b26879597e5d",
+	"s2_theme_ui":         "red",
+	"s2_uGoo":             "w6a162dd67b1968e6349944bcff010fdd63ee724",
+	"s2_uLang":            "en",
+	"sh":                  "72",
+	"sw":                  "95.4",
 }
 
 // HTTPClient represents an HTTP client with headers and cookies
@@ -44,10 +55,11 @@ func newHTTPClient(proxyURL, proxyUser, proxyPass string) *HTTPClient {
 		"Origin":           "https://myip.ms",
 		"Referer":          "https://myip.ms/browse/sites/1",
 		"User-Agent":       "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/132.0.0.0 Safari/537.36",
+		"Accept":           "*/*",
 	}
 
 	var cookies []*http.Cookie
-	for name, value := range DefaultCookies {
+	for name, value := range Cookies {
 		cookies = append(cookies, &http.Cookie{Name: name, Value: value})
 	}
 
@@ -62,7 +74,6 @@ func newHTTPClient(proxyURL, proxyUser, proxyPass string) *HTTPClient {
 		if err != nil {
 			fmt.Printf("Warning: Invalid proxy URL '%s': %v\n", proxyURL, err)
 		} else {
-			// Set proxy authentication if provided
 			if proxyUser != "" && proxyPass != "" {
 				proxyURLParsed.User = url.UserPassword(proxyUser, proxyPass)
 			}
@@ -83,9 +94,29 @@ func newHTTPClient(proxyURL, proxyUser, proxyPass string) *HTTPClient {
 
 // post performs a POST request with the configured headers and cookies
 func (hc *HTTPClient) post(url string, data url.Values) (*http.Response, error) {
-	req, err := http.NewRequest("POST", url, strings.NewReader(data.Encode()))
-	if err != nil {
-		return nil, err
+	return hc.makeRequest("POST", url, data)
+}
+
+// get performs a GET request with the configured headers and cookies
+func (hc *HTTPClient) get(url string) (*http.Response, error) {
+	return hc.makeRequest("GET", url, nil)
+}
+
+// makeRequest performs HTTP requests with the configured headers and cookies
+func (hc *HTTPClient) makeRequest(method, url string, data url.Values) (*http.Response, error) {
+	var req *http.Request
+	var err error
+
+	if method == "POST" && data != nil {
+		req, err = http.NewRequest("POST", url, strings.NewReader(data.Encode()))
+		if err != nil {
+			return nil, err
+		}
+	} else {
+		req, err = http.NewRequest("GET", url, nil)
+		if err != nil {
+			return nil, err
+		}
 	}
 
 	for key, value := range hc.headers {
@@ -99,11 +130,34 @@ func (hc *HTTPClient) post(url string, data url.Values) (*http.Response, error) 
 	return hc.client.Do(req)
 }
 
+// downloadImage downloads an image from the given URL to a file
+func (hc *HTTPClient) downloadImage(imageURL, filename string) error {
+	resp, err := hc.get(imageURL)
+	if err != nil {
+		return fmt.Errorf("error downloading image: %v", err)
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK {
+		return fmt.Errorf("HTTP %d when downloading image", resp.StatusCode)
+	}
+
+	file, err := os.Create(filename)
+	if err != nil {
+		return fmt.Errorf("error creating file: %v", err)
+	}
+	defer file.Close()
+
+	if _, err = io.Copy(file, resp.Body); err != nil {
+		return fmt.Errorf("error writing file: %v", err)
+	}
+
+	return nil
+}
+
 // buildURLTemplate constructs a URL template with all filters, leaving page as placeholder
 func buildURLTemplate(filter *Filter) string {
 	url := "https://myip.ms/ajax_table/sites/%d"
-
-	// Order: url -> countryID -> rank/rankii -> ipID/ipIDii -> own -> hostID -> dns -> cntVisitors/cntVisitorsii
 
 	if filter.URLFilter != "" {
 		url += fmt.Sprintf("/url/%s", filter.URLFilter)
