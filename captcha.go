@@ -16,10 +16,10 @@ import (
 	"time"
 )
 
-//go:embed web/templates/captcha.html
+//go:embed templates/captcha.html
 var captchaHTML string
 
-//go:embed web/static/*
+//go:embed static/*
 var staticFiles embed.FS
 
 const (
