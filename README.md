@@ -10,7 +10,6 @@ MyIP.ms Domain Scraper is a sophisticated command-line tool designed to efficien
 
 - **Multi-Filter Support**: Filter domains by country, hosting provider, DNS records, IP ranges, visitor counts, and more
 - **Advanced IP Range Filtering**: Supports both traditional IP ranges (from-to) and CIDR notation
-- **Concurrent Scraping**: Multi-threaded scraping with configurable worker pools for faster results
 - **Rate Limiting Control**: Adjustable delays between requests to respect server limits
 - **Proxy Integration**: Full proxy support including HTTP, HTTPS, and SOCKS5 with authentication
 - **Automatic Cookie Management**: Built-in cookie handling and captcha solving capabilities
@@ -50,12 +49,6 @@ Pre-built binaries are available for multiple platforms in the [Releases](https:
 
 # Combined filters with custom output
 ./myipms-scraper -country="United States" -owner="Amazon.com, Inc" -output=aws-usa-domains.txt -pages=10
-
-# Fast concurrent scraping
-./myipms-scraper -country="United States" -workers=5 -delay=300
-
-# Conservative scraping with single worker (classic mode)
-./myipms-scraper -country="United States" -workers=1 -delay=1000
 ```
 
 ## 📊 Filter Options
@@ -95,50 +88,12 @@ The scraper includes comprehensive proxy support for enhanced reliability and by
 ./myipms-scraper -proxy=socks5://127.0.0.1:9050
 ```
 
-## ⚡ Concurrent Scraping
-
-The scraper now supports concurrent/parallel scraping for significantly faster results:
-
-### Key Benefits
-- **Faster Scraping**: Multiple pages processed simultaneously
-- **Configurable Workers**: 1-10 concurrent workers (default: 3)
-- **Smart Rate Limiting**: Adjustable delays to avoid server overload
-- **Error Resilience**: Automatic retries and graceful degradation
-
-### Concurrency Configuration
-```bash
-# Use 5 concurrent workers (recommended for fast scraping)
-./myipms-scraper -workers=5
-
-# Conservative approach with more delay between requests
-./myipms-scraper -workers=3 -delay=1000
-
-# Maximum speed (use with caution, may trigger rate limits)
-./myipms-scraper -workers=8 -delay=200
-
-# Classic sequential mode (single worker)
-./myipms-scraper -workers=1
-```
-
-### Performance Guidelines
-- **Default (3 workers, 500ms delay)**: Good balance of speed and stability
-- **Fast (5-8 workers, 200-300ms delay)**: For bulk scraping with proxy/VPN
-- **Conservative (1-2 workers, 1000ms delay)**: For avoiding rate limits
-- **Maximum**: Up to 10 workers, but may trigger anti-bot measures
-
-### Considerations
-- More workers = faster scraping but higher chance of rate limiting
-- Use appropriate delays to respect server resources
-- Consider using proxies with high worker counts
-- Monitor for IP rate limiting and reduce workers if needed
-
 ## 📈 Performance & Reliability
 
 ### Built-in Rate Limiting
 - Configurable delays between requests (default: 500ms)
 - Intelligent backoff for rate limit detection
 - IP rotation recommendations for large-scale scraping
-- Concurrent processing with worker pool management
 
 ### Error Recovery
 - Automatic cookie refresh when expired
@@ -148,10 +103,8 @@ The scraper now supports concurrent/parallel scraping for significantly faster r
 - Per-page retry logic with exponential backoff
 
 ### Output Management
-- Real-time progress tracking with worker statistics
 - Configurable output files
 - Automatic deduplication
-- Statistics reporting for concurrent operations
 
 ## 🔧 Configuration
 
@@ -194,11 +147,8 @@ When cookies expire, the tool will:
 
 ### Rate Limiting & Best Practices
 - The tool includes configurable rate limiting (default: 500ms delays)
-- Concurrent scraping allows faster processing while respecting limits
 - For large-scale scraping, consider using proxies or VPNs
 - Respect the website's terms of service
-- Monitor for IP rate limiting and adjust worker count/delays accordingly
-- Start with default settings (3 workers, 500ms delay) and adjust based on results
 
 ### Authentication Requirements
 - First-time usage requires solving a captcha

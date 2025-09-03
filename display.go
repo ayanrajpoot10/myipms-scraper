@@ -30,11 +30,6 @@ func showHelp() {
 			"-pages <num>       Max pages to scrape (0 = unlimited, default: unlimited)",
 			"-start <num>       Starting page number (default: 1)",
 		},
-		"CONCURRENCY OPTIONS": {
-			"-workers <num>     Number of concurrent workers (default: 3, max: 10)",
-			"-delay <ms>        Delay between requests in milliseconds (default: 500ms)",
-			"                   Use -workers=1 for sequential processing",
-		},
 		"PROXY OPTIONS": {
 			"-proxy <url>       Proxy URL with optional authentication",
 			"                   Format: protocol://user:pass@host:port",
@@ -56,7 +51,6 @@ func showHelp() {
 			"• Start page allows resuming scraping from a specific page",
 			"• Proxy format: protocol://host:port[@user:pass]",
 			"• Supported protocols: HTTP, HTTPS, SOCKS5",
-			"• Higher worker count = faster scraping but may trigger rate limits",
 			"• Use delay to respect server limits",
 			"• If scraping fails, change IP, or use proxy",
 		},
@@ -64,7 +58,7 @@ func showHelp() {
 
 	order := []string{
 		"DESCRIPTION", "USAGE", "FILTER OPTIONS", "OUTPUT OPTIONS",
-		"CONCURRENCY OPTIONS", "PROXY OPTIONS", "OTHER", "NOTES",
+		"PROXY OPTIONS", "OTHER", "NOTES",
 	}
 
 	for _, section := range order {

@@ -16,7 +16,7 @@ var requestData = url.Values{
 }
 
 var Cookies = map[string]string{
-	"PHPSESSID":           "ze6doi5fo94hv5k2ouqmopd47k",
+	"PHPSESSID":           "be6doi5fo94hv5k2ouqmopd47k",
 	"s2_csrf_cookie_name": "cf0b4574d2c27713afd4b26879597e5d",
 	"s2_theme_ui":         "red",
 	"s2_uGoo":             "w6a162dd67b1968e6349944bcff010fdd63ee724",

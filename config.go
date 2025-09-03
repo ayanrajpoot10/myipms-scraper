@@ -115,7 +115,6 @@ type Config struct {
 	ProxyURL      string
 	ProxyUser     string
 	ProxyPass     string
-	Workers       int
 	Delay         time.Duration
 	List          bool
 }
@@ -159,7 +158,6 @@ func parseFlags() *Config {
 	flag.IntVar(&config.MaxPages, "pages", 0, "Max pages (0=unlimited)")
 	flag.IntVar(&config.StartPage, "start", 1, "Starting page")
 	flag.StringVar(&config.ProxyURL, "proxy", "", "Proxy URL (http[s]/socks5://user:pass@host:port)")
-	flag.IntVar(&config.Workers, "workers", 3, "Concurrent workers (1-10)")
 	flag.DurationVar(&config.Delay, "delay", 500*time.Millisecond, "Delay between requests")
 	flag.BoolVar(&config.List, "list", false, "List all available options")
 
@@ -219,10 +217,6 @@ func validateAndResolveFilters(c *Config) (*Filter, error) {
 
 	if c.StartPage < 1 {
 		return nil, fmt.Errorf("start page must be >= 1")
-	}
-
-	if c.Workers < 1 || c.Workers > 10 {
-		return nil, fmt.Errorf("workers must be between 1 and 10")
 	}
 
 	if c.Delay < 0 {
