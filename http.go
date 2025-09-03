@@ -6,7 +6,6 @@ import (
 	"io"
 	"net/http"
 	"net/url"
-	"os"
 	"strings"
 	"time"
 )
@@ -17,7 +16,7 @@ var requestData = url.Values{
 }
 
 var Cookies = map[string]string{
-	"PHPSESSID":           "le6doi5fo94hv5k2ouqmopd47k",
+	"PHPSESSID":           "ze6doi5fo94hv5k2ouqmopd47k",
 	"s2_csrf_cookie_name": "cf0b4574d2c27713afd4b26879597e5d",
 	"s2_theme_ui":         "red",
 	"s2_uGoo":             "w6a162dd67b1968e6349944bcff010fdd63ee724",
@@ -130,65 +129,40 @@ func (hc *HTTPClient) makeRequest(method, url string, data url.Values) (*http.Re
 	return hc.client.Do(req)
 }
 
-// downloadImage downloads an image from the given URL to a file
-func (hc *HTTPClient) downloadImage(imageURL, filename string) error {
-	resp, err := hc.get(imageURL)
-	if err != nil {
-		return fmt.Errorf("error downloading image: %v", err)
-	}
-	defer resp.Body.Close()
-
-	if resp.StatusCode != http.StatusOK {
-		return fmt.Errorf("HTTP %d when downloading image", resp.StatusCode)
-	}
-
-	file, err := os.Create(filename)
-	if err != nil {
-		return fmt.Errorf("error creating file: %v", err)
-	}
-	defer file.Close()
-
-	if _, err = io.Copy(file, resp.Body); err != nil {
-		return fmt.Errorf("error writing file: %v", err)
-	}
-
-	return nil
-}
-
 // buildURLTemplate constructs a URL template with all filters, leaving page as placeholder
-func buildURLTemplate(filter *Filter) string {
+func buildURLTemplate(f *Filter) string {
 	url := "https://myip.ms/ajax_table/sites/%d"
 
-	if filter.URLFilter != "" {
-		url += fmt.Sprintf("/url/%s", filter.URLFilter)
+	if f.URLFilter != "" {
+		url += fmt.Sprintf("/url/%s", f.URLFilter)
 	}
 
-	if filter.CountryCode != "" {
-		url += fmt.Sprintf("/countryID/%s", filter.CountryCode)
+	if f.CountryCode != "" {
+		url += fmt.Sprintf("/countryID/%s", f.CountryCode)
 	}
 
-	if filter.RankFrom > 0 && filter.RankTo > 0 {
-		url += fmt.Sprintf("/rank/%d/rankii/%d", filter.RankFrom, filter.RankTo)
+	if f.RankFrom > 0 && f.RankTo > 0 {
+		url += fmt.Sprintf("/rank/%d/rankii/%d", f.RankFrom, f.RankTo)
 	}
 
-	if filter.IPFrom != "" && filter.IPTo != "" {
-		url += fmt.Sprintf("/ipID/%s/ipIDii/%s", filter.IPFrom, filter.IPTo)
+	if f.IPFrom != "" && f.IPTo != "" {
+		url += fmt.Sprintf("/ipID/%s/ipIDii/%s", f.IPFrom, f.IPTo)
 	}
 
-	if filter.OwnerID != 0 {
-		url += fmt.Sprintf("/own/%d", filter.OwnerID)
+	if f.OwnerID != 0 {
+		url += fmt.Sprintf("/own/%d", f.OwnerID)
 	}
 
-	if filter.HostID != 0 {
-		url += fmt.Sprintf("/hostID/%d", filter.HostID)
+	if f.HostID != 0 {
+		url += fmt.Sprintf("/hostID/%d", f.HostID)
 	}
 
-	if filter.DNSID != 0 {
-		url += fmt.Sprintf("/dns/%d", filter.DNSID)
+	if f.DNSID != 0 {
+		url += fmt.Sprintf("/dns/%d", f.DNSID)
 	}
 
-	if filter.VisitorsFrom > 0 && filter.VisitorsTo > 0 {
-		url += fmt.Sprintf("/cntVisitors/%d/cntVisitorsii/%d", filter.VisitorsFrom, filter.VisitorsTo)
+	if f.VisitorsFrom > 0 && f.VisitorsTo > 0 {
+		url += fmt.Sprintf("/cntVisitors/%d/cntVisitorsii/%d", f.VisitorsFrom, f.VisitorsTo)
 	}
 
 	return url
@@ -204,7 +178,7 @@ func (s *Scraper) fetchPage(page int) ([]string, error) {
 	}
 	defer resp.Body.Close()
 
-	if resp.StatusCode != 200 {
+	if resp.StatusCode != http.StatusOK {
 		return nil, fmt.Errorf("HTTP %d", resp.StatusCode)
 	}
 

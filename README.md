@@ -156,7 +156,21 @@ The scraper now supports concurrent/parallel scraping for significantly faster r
 ## 🔧 Configuration
 
 ### Cookie Management
-First-time users will be prompted to solve a captcha for authentication. Cookies are automatically saved and reused for subsequent runs.
+The scraper now features an **improved web-based captcha solver** for better user experience:
+
+- **Web Interface**: Captcha images are served through a local web server at `http://localhost:8080`
+- **Auto-Launch Browser**: The default browser automatically opens to the captcha solving page
+- **Real-time Feedback**: Immediate feedback on captcha submission success or failure
+- **No File Management**: No need to manually check captcha image files
+- **Retry Logic**: Automatic captcha refresh on failed attempts
+- **Mobile Friendly**: Works on any device that can access localhost
+
+When cookies expire, the tool will:
+1. Automatically start a local web server
+2. Open your browser to the captcha solving interface
+3. Display the captcha image directly in the browser
+4. Allow you to submit the solution through a user-friendly form
+5. Automatically continue scraping once solved
 
 ## 📋 Available Filters
 
