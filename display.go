@@ -16,7 +16,7 @@ func showHelp() {
 			"scraper [OPTIONS]",
 		},
 		"FILTER OPTIONS": {
-			"-country <name>    Filter by country name (e.g., \"United States\", \"United Kingdom\", \"Japan\")",
+			"-country <name>    Filter by country name (e.g., \"USA\", \"India\", \"Japan\")",
 			"-owner <name>      Filter by hosting provider (e.g., \"Cloudflare, Inc\")",
 			"-host <name>       Filter by specific host",
 			"-dns <record>      Filter by DNS record",

@@ -42,19 +42,19 @@ Pre-built binaries are available for multiple platforms in the [Releases](https:
 ./myipms-scraper
 
 # Filter by country
-./myipms-scraper -country="United States"
+./myipms-scraper -country="USA"
 
 # Filter by hosting provider
 ./myipms-scraper -owner="Cloudflare, Inc"
 
 # Combined filters with custom output
-./myipms-scraper -country="United States" -owner="Amazon.com, Inc" -output=aws-usa-domains.txt -pages=10
+./myipms-scraper -country="USA" -owner="Amazon.com, Inc" -output=aws-usa-domains.txt -pages=10
 ```
 
 ## 📊 Filter Options
 
 ### Geographic Filters
-- **Country**: Filter by country name (e.g., `United States`, `United Kingdom`, `Japan`)
+- **Country**: Filter by country name (e.g., `USA`, `India`, `Japan`)
 - **IP Range**: Filter by IP address ranges or CIDR blocks
 
 ### Hosting & Infrastructure
@@ -111,7 +111,7 @@ The scraper includes comprehensive proxy support for enhanced reliability and by
 ### Cookie Management
 The scraper now features an **improved web-based captcha solver** for better user experience:
 
-- **Web Interface**: Captcha images are served through a local web server at `http://localhost:8080`
+- **Web Interface**: Captcha images are served through a local web server at `http://localhost:5050`
 - **Auto-Launch Browser**: The default browser automatically opens to the captcha solving page
 - **Real-time Feedback**: Immediate feedback on captcha submission success or failure
 - **No File Management**: No need to manually check captcha image files
