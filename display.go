@@ -43,7 +43,7 @@ func showHelp() {
 			"-list             Show all available options (or specific options with f flags)",
 		},
 		"NOTES": {
-			"• All f options can be combined",
+			"• All flags options can be combined",
 			"• Range filters use 'from-to' format (e.g., 10-20, 1000-5000)",
 			"• Range values must be positive integers (from ≤ to)",
 			"• IP ranges support both 'from-to' and CIDR (e.g., 192.168.0.0/24)",
@@ -92,7 +92,7 @@ func displayCategory[T any](title string, items map[string]T, showTotal bool) {
 	}
 }
 
-// showSpecificOptions displays f options based on provided flags
+// showSpecificOptions displays flags options based on provided flags
 // If no flags are provided, shows all available options
 func showSpecificOptions(owner, country, host, dnsRecord string) {
 	hasAnyFlag := owner != "" || country != "" || host != "" || dnsRecord != ""
