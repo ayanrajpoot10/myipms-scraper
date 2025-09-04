@@ -25,9 +25,9 @@ func main() {
 	httpClient := newHTTPClient(config.ProxyURL, config.ProxyUser, config.ProxyPass)
 	scraper := NewScraper(httpClient, filter)
 
-	file, err := os.Create(config.Output)
+	file, err := os.OpenFile(config.Output, os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0644)
 	if err != nil {
-		fmt.Printf("Error creating output file: %v\n", err)
+		fmt.Printf("Error opening output file: %v\n", err)
 		os.Exit(1)
 	}
 	defer file.Close()
