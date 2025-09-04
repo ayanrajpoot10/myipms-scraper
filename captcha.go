@@ -26,7 +26,7 @@ const (
 	CaptchaBaseURL   = "https://myip.ms"
 	CaptchaTargetURL = CaptchaBaseURL + "/ajax_table/sites/1"
 	CaptchaFinalURL  = CaptchaBaseURL + "/browse/sites/1"
-	WebServerPort    = ":8080"
+	WebServerPort    = ":5050"
 )
 
 // CaptchaData holds the current captcha information
@@ -93,8 +93,6 @@ func (cs *CaptchaServer) Start() error {
 		Addr:    WebServerPort,
 		Handler: mux,
 	}
-
-	fmt.Printf("Starting captcha solver web interface at http://localhost%s\n", WebServerPort)
 
 	if err := openBrowser("http://localhost" + WebServerPort); err != nil {
 		fmt.Printf("Could not open browser automatically. Please manually navigate to: http://localhost%s\n", WebServerPort)

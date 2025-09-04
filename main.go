@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"os"
 	"strings"
-	"time"
 )
 
 func main() {
@@ -44,7 +43,6 @@ func main() {
 		if err != nil {
 			fmt.Printf("Error: %v\n", err)
 			if strings.Contains(err.Error(), "cookies expired") {
-				fmt.Println("Cookies have expired. Attempting to solve captcha and get fresh cookies...")
 				captchaErr := solveCaptcha(httpClient)
 				if captchaErr != nil {
 					fmt.Printf("Failed to solve captcha: %v\n", captchaErr)
@@ -56,8 +54,6 @@ func main() {
 				fmt.Println("IP address has been rate limited. Please:")
 				fmt.Println("1. Use a proxy or VPN to change your IP address")
 				fmt.Println("2. If using mobile internet, turn airplane mode on/off to get a new IP")
-				fmt.Println("3. Wait some time before trying again")
-				fmt.Println("4. Try reducing the scraping speed or page count")
 				os.Exit(1)
 			}
 			continue
@@ -73,9 +69,7 @@ func main() {
 		}
 
 		totalDomains += len(domains)
-		fmt.Printf("Found %d domains (Total: %d)\n", len(domains), totalDomains)
-
-		time.Sleep(1 * time.Second)
+		fmt.Printf("Page %d: Found %d domains (Total: %d)\n", page, len(domains), totalDomains)
 		page++
 	}
 

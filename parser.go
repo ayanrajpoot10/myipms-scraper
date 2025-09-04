@@ -54,5 +54,5 @@ func isCookieExpired(html string) bool {
 
 // isIPLimitExceeded checks if the response indicates IP limit exceeded
 func isIPLimitExceeded(html string) bool {
-	return strings.Contains(html, "You have exceeded page visit limit")
+	return strings.Contains(html, "You have exceeded page visit limit") || strings.Contains(html, "Error loading data")
 }
