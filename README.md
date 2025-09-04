@@ -29,7 +29,7 @@ MyIP.ms Domain Scraper is a sophisticated command-line tool designed to efficien
 
 ```bash
 # Install the scraper
-go install github.com/ayanrajpoot10/myipms-scraper
+go install github.com/ayanrajpoot10/myipms-scraper@latest
 ```
 
 ### Download Binary
