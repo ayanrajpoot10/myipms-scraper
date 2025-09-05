@@ -321,20 +321,6 @@ func solveCaptcha(client *HTTPClient) error {
 
 	captchaServer := NewCaptchaServer(client)
 
-	go func() {
-		if err := captchaServer.Start(); err != nil && err != http.ErrServerClosed {
-			fmt.Printf("Error starting captcha server: %v\n", err)
-		}
-	}()
-
-	time.Sleep(1 * time.Second)
-
-	defer func() {
-		if err := captchaServer.Stop(); err != nil {
-			fmt.Printf("Error stopping captcha server: %v\n", err)
-		}
-	}()
-
 	postData := url.Values{
 		"x":                    {"150"},
 		"y":                    {"58"},
@@ -348,25 +334,37 @@ func solveCaptcha(client *HTTPClient) error {
 		return fmt.Errorf("error making initial request: %v", err)
 	}
 	defer resp.Body.Close()
-
+	
 	body, err := io.ReadAll(resp.Body)
 	if err != nil {
 		return fmt.Errorf("error reading response: %v", err)
 	}
-
+	
 	html := string(body)
 	captchaToken := extractCaptchaToken(html)
 	captchaURL := extractCaptchaURL(html)
-
+	
 	if captchaURL == "" || captchaToken == "" {
 		return fmt.Errorf("no captcha image URL or token found")
 	}
-
+	
 	captchaServer.SetCaptchaData(captchaToken, captchaURL)
+	
+	go func() {
+		if err := captchaServer.Start(); err != nil && err != http.ErrServerClosed {
+			fmt.Printf("Error starting captcha server: %v\n", err)
+		}
+	}()
+
+	defer func() {
+		if err := captchaServer.Stop(); err != nil {
+			fmt.Printf("Error stopping captcha server: %v\n", err)
+		}
+	}()
 
 	fmt.Println("Captcha image is ready! Please solve it in your web browser.")
 	fmt.Printf("If the browser didn't open automatically, navigate to: http://localhost%s\n", WebServerPort)
-
+	
 	captchaResponse, err := captchaServer.WaitForCaptcha()
 	if err != nil {
 		return fmt.Errorf("error getting captcha response: %v", err)
