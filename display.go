@@ -40,7 +40,7 @@ func showHelp() {
 		},
 		"OTHER": {
 			"-help             Show this help message",
-			"-list             Show all available options (or specific options with f flags)",
+			"-list             Show all available options (or specific options with filters flags)",
 		},
 		"NOTES": {
 			"• All flags options can be combined",
@@ -49,7 +49,7 @@ func showHelp() {
 			"• IP ranges support both 'from-to' and CIDR (e.g., 192.168.0.0/24)",
 			"• Quotes required for CIDR in shells: -ip=\"192.168.0.0/24\"",
 			"• Start page allows resuming scraping from a specific page",
-			"• Proxy format: protocol://host:port[@user:pass]",
+			"• Proxy format: protocol://user:pass@host:port",
 			"• Supported protocols: HTTP, HTTPS, SOCKS5",
 			"• Use delay to respect server limits",
 			"• If scraping fails, change IP, or use proxy",
