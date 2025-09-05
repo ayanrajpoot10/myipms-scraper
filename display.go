@@ -122,32 +122,35 @@ func showSpecificOptions(owner, country, host, dnsRecord string) {
 // displayScrapingFilter shows the current scraping configuration
 func displayScrapingFilter(f *Filter, c *Config) {
 	fmt.Printf("Filter: ")
+	var filters []string
 	if f.DNSName != "" {
-		fmt.Printf("DNS (%s - ID: %d)", f.DNSName, f.DNSID)
-	} else if f.HostName != "" {
-		fmt.Printf("Host (%s - ID: %d)", f.HostName, f.HostID)
-	} else if f.CountryCode == "" && f.OwnerName == "" && f.URLFilter == "" && f.RankFrom == 0 && f.IPFrom == "" && f.VisitorsFrom == 0 {
+		filters = append(filters, fmt.Sprintf("DNS (%s - ID: %d)", f.DNSName, f.DNSID))
+	}
+	if f.HostName != "" {
+		filters = append(filters, fmt.Sprintf("Host (%s - ID: %d)", f.HostName, f.HostID))
+	}
+	if f.URLFilter != "" {
+		filters = append(filters, fmt.Sprintf("URL (%s)", f.URLFilter))
+	}
+	if f.CountryCode != "" {
+		filters = append(filters, fmt.Sprintf("Country (%s - %s)", f.CountryName, f.CountryCode))
+	}
+	if f.RankFrom > 0 && f.RankTo > 0 {
+		filters = append(filters, fmt.Sprintf("Rank (%d-%d)", f.RankFrom, f.RankTo))
+	}
+	if f.IPFrom != "" && f.IPTo != "" {
+		filters = append(filters, fmt.Sprintf("IP Range (%s-%s)", f.IPFrom, f.IPTo))
+	}
+	if f.VisitorsFrom > 0 && f.VisitorsTo > 0 {
+		filters = append(filters, fmt.Sprintf("Visitors (%d-%d)", f.VisitorsFrom, f.VisitorsTo))
+	}
+	if f.OwnerName != "" {
+		filters = append(filters, fmt.Sprintf("Owner (%s - ID: %d)", f.OwnerName, f.OwnerID))
+	}
+
+	if len(filters) == 0 {
 		fmt.Print("Top Domains (default)")
 	} else {
-		var filters []string
-		if f.URLFilter != "" {
-			filters = append(filters, fmt.Sprintf("URL (%s)", f.URLFilter))
-		}
-		if f.CountryCode != "" {
-			filters = append(filters, fmt.Sprintf("Country (%s - %s)", f.CountryName, f.CountryCode))
-		}
-		if f.RankFrom > 0 && f.RankTo > 0 {
-			filters = append(filters, fmt.Sprintf("Rank (%d-%d)", f.RankFrom, f.RankTo))
-		}
-		if f.IPFrom != "" && f.IPTo != "" {
-			filters = append(filters, fmt.Sprintf("IP Range (%s-%s)", f.IPFrom, f.IPTo))
-		}
-		if f.VisitorsFrom > 0 && f.VisitorsTo > 0 {
-			filters = append(filters, fmt.Sprintf("Visitors (%d-%d)", f.VisitorsFrom, f.VisitorsTo))
-		}
-		if f.OwnerName != "" {
-			filters = append(filters, fmt.Sprintf("Owner (%s - ID: %d)", f.OwnerName, f.OwnerID))
-		}
 		fmt.Print(strings.Join(filters, " + "))
 	}
 
