@@ -10,11 +10,13 @@ import (
 	"time"
 )
 
+// requestData holds the common POST data for requests
 var requestData = url.Values{
 	"getpage": []string{"yes"},
 	"lang":    []string{"en"},
 }
 
+// Cookies required for requests
 var Cookies = map[string]string{
 	"PHPSESSID":           "ae6doi5fo94hv5k2ouqmopd47k",
 	"s2_csrf_cookie_name": "cf0b4574d2c27713afd4b26879597e5d",
@@ -23,6 +25,16 @@ var Cookies = map[string]string{
 	"s2_uLang":            "en",
 	"sh":                  "72",
 	"sw":                  "95.4",
+}
+
+// Headers for HTTP requests
+var Headers = map[string]string{
+	"Content-Type":     "application/x-www-form-urlencoded; charset=UTF-8",
+	"X-Requested-With": "XMLHttpRequest",
+	"Origin":           "https://myip.ms",
+	"Referer":          "https://myip.ms/browse/sites/1",
+	"User-Agent":       "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/132.0.0.0 Safari/537.36",
+	"Accept":           "*/*",
 }
 
 // HTTPClient represents an HTTP client with headers and cookies
@@ -48,16 +60,8 @@ func NewScraper(httpClient *HTTPClient, filter *Filter) *Scraper {
 
 // newHTTPClient creates a new HTTP client with default cookies and optional proxy
 func newHTTPClient(proxyURL, proxyUser, proxyPass string) *HTTPClient {
-	headers := map[string]string{
-		"Content-Type":     "application/x-www-form-urlencoded; charset=UTF-8",
-		"X-Requested-With": "XMLHttpRequest",
-		"Origin":           "https://myip.ms",
-		"Referer":          "https://myip.ms/browse/sites/1",
-		"User-Agent":       "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/132.0.0.0 Safari/537.36",
-		"Accept":           "*/*",
-	}
-
 	var cookies []*http.Cookie
+
 	for name, value := range Cookies {
 		cookies = append(cookies, &http.Cookie{Name: name, Value: value})
 	}
@@ -77,7 +81,6 @@ func newHTTPClient(proxyURL, proxyUser, proxyPass string) *HTTPClient {
 				proxyURLParsed.User = url.UserPassword(proxyUser, proxyPass)
 			}
 			transport.Proxy = http.ProxyURL(proxyURLParsed)
-			fmt.Printf("Using proxy: %s\n", proxyURL)
 		}
 	}
 
@@ -86,7 +89,7 @@ func newHTTPClient(proxyURL, proxyUser, proxyPass string) *HTTPClient {
 			Timeout:   30 * time.Second,
 			Transport: transport,
 		},
-		headers: headers,
+		headers: Headers,
 		cookies: cookies,
 	}
 }
