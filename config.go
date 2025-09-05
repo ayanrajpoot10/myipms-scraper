@@ -326,5 +326,5 @@ func suggestOptions[T any](input string, options map[string]T, label string) {
 		fmt.Printf("\nNo similar %s found.\n", label)
 	}
 
-	fmt.Println("\nUse --list to see all available options.")
+	fmt.Printf("\nUse --list to see all available %s options.", label)
 }
