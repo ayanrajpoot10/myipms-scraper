@@ -10,7 +10,6 @@ MyIP.ms Domain Scraper is a sophisticated command-line tool designed to efficien
 
 - **Multi-Filter Support**: Filter domains by country, hosting provider, DNS records, IP ranges, visitor counts, and more
 - **Advanced IP Range Filtering**: Supports both traditional IP ranges (from-to) and CIDR notation
-- **Rate Limiting Control**: Adjustable delays between requests to respect server limits
 - **Proxy Integration**: Full proxy support including HTTP, HTTPS, and SOCKS5 with authentication
 - **Automatic Cookie Management**: Built-in cookie handling and captcha solving capabilities
 - **Resume Functionality**: Start scraping from any page number to resume interrupted sessions
@@ -91,7 +90,6 @@ The scraper includes comprehensive proxy support for enhanced reliability and by
 ## 📈 Performance & Reliability
 
 ### Built-in Rate Limiting
-- Configurable delays between requests (default: 500ms)
 - Intelligent backoff for rate limit detection
 - IP rotation recommendations for large-scale scraping
 
@@ -146,7 +144,6 @@ When cookies expire, the tool will:
 ## 🚨 Important Notes
 
 ### Rate Limiting & Best Practices
-- The tool includes configurable rate limiting (default: 500ms delays)
 - For large-scale scraping, consider using proxies or VPNs
 - Respect the website's terms of service
 

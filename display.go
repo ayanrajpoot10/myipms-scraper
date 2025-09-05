@@ -51,7 +51,6 @@ func showHelp() {
 			"• Start page allows resuming scraping from a specific page",
 			"• Proxy format: protocol://user:pass@host:port",
 			"• Supported protocols: HTTP, HTTPS, SOCKS5",
-			"• Use delay to respect server limits",
 			"• If scraping fails, change IP, or use proxy",
 		},
 	}

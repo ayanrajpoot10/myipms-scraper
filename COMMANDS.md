@@ -514,7 +514,6 @@ tail -f usa_domains.txt &  # In separate terminal
 
 #### Respect Rate Limits
 ```bash  
-# ✅ Built-in 1-second delays are enforced
 # ✅ Use proxies for legitimate large-scale needs
 # ✅ Avoid overwhelming the service
 

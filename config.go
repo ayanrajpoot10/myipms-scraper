@@ -8,7 +8,6 @@ import (
 	"os"
 	"strconv"
 	"strings"
-	"time"
 )
 
 // IntRange represents a range of integers
@@ -115,7 +114,6 @@ type Config struct {
 	ProxyURL      string
 	ProxyUser     string
 	ProxyPass     string
-	Delay         time.Duration
 	List          bool
 }
 
@@ -158,7 +156,6 @@ func parseFlags() *Config {
 	flag.IntVar(&config.MaxPages, "pages", 0, "Max pages (0=unlimited)")
 	flag.IntVar(&config.StartPage, "start", 1, "Starting page")
 	flag.StringVar(&config.ProxyURL, "proxy", "", "Proxy URL (http[s]/socks5://user:pass@host:port)")
-	flag.DurationVar(&config.Delay, "delay", 500*time.Millisecond, "Delay between requests")
 	flag.BoolVar(&config.List, "list", false, "List all available options")
 
 	flag.Parse()
@@ -217,10 +214,6 @@ func validateAndResolveFilters(c *Config) (*Filter, error) {
 
 	if c.StartPage < 1 {
 		return nil, fmt.Errorf("start page must be >= 1")
-	}
-
-	if c.Delay < 0 {
-		return nil, fmt.Errorf("delay must be non-negative")
 	}
 
 	if c.ProxyURL != "" {
