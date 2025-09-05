@@ -7,28 +7,30 @@
     <link rel="stylesheet" href="/static/captcha.css">
 </head>
 <body>
-    <div class="container">
+    <main class="container">
         <h1>🤖 Captcha Solver</h1>
         <p>Please solve the captcha below to continue scraping:</p>
-        
-        <div id="captcha-container">
-            <img id="captcha-image" class="captcha-image" src="/captcha-image" alt="Captcha Image" />
-            
-            <div class="input-group">
-                <input type="text" id="captcha-input" placeholder="Enter captcha text" autocomplete="off" />
-                <br>
-                <button onclick="submitCaptcha()" id="submit-btn">Submit</button>
-                <button onclick="refreshCaptcha()" id="refresh-btn">Refresh Image</button>
-            </div>
-        </div>
 
-        <div id="loading" class="loading">
-            <div class="spinner"></div>
+        <section id="captcha-container" class="captcha-section">
+            <img id="captcha-image" class="captcha-image" src="/captcha-image" alt="Captcha Image" />
+
+            <div class="input-group">
+                <label for="captcha-input" class="sr-only">Enter captcha text</label>
+                <input type="text" id="captcha-input" placeholder="Enter captcha text" autocomplete="off" required />
+                <div class="button-group">
+                    <button type="button" onclick="submitCaptcha()" id="submit-btn">Submit</button>
+                    <button type="button" onclick="refreshCaptcha()" id="refresh-btn">Refresh Image</button>
+                </div>
+            </div>
+        </section>
+
+        <div id="loading" class="loading" aria-live="polite">
+            <div class="spinner" aria-hidden="true"></div>
             <p>Processing...</p>
         </div>
 
-        <div id="status"></div>
-    </div>
+        <div id="status" aria-live="polite"></div>
+    </main>
 
     <script src="/static/captcha.js"></script>
 </body>
