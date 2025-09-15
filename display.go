@@ -8,65 +8,48 @@ import (
 
 // showHelp displays the help message.
 func showHelp() {
-	sections := map[string][]string{
-		"DESCRIPTION": {
-			"Scrapes domain lists from myip.ms with various filtering options.",
-		},
-		"USAGE": {
-			"scraper [OPTIONS]",
-		},
-		"FILTER OPTIONS": {
-			"-country <name>    Filter by country name (e.g., \"USA\", \"India\", \"Japan\")",
-			"-owner <name>      Filter by hosting provider (e.g., \"Cloudflare, Inc\")",
-			"-host <name>       Filter by specific host",
-			"-dns <record>      Filter by DNS record",
-			"-url <text>        Filter by URL containing specific text (e.g., wiki, blog)",
-			"-rank <range>      Filter by popularity ranking range (e.g., 10-20)",
-			"-ip <range>        Filter by IP address range (e.g., 104.16.0.0-104.16.255.255 or 192.168.0.0/24)",
-			"-visitors <range>  Filter by visitor count range (e.g., 1000-20000)",
-		},
-		"OUTPUT OPTIONS": {
-			"-output <file>     Output filename (default: domains.txt)",
-			"-pages <num>       Max pages to scrape (0 = unlimited, default: unlimited)",
-			"-start <num>       Starting page number (default: 1)",
-		},
-		"PROXY OPTIONS": {
-			"-proxy <url>       Proxy URL with optional authentication",
-			"                   Format: protocol://user:pass@host:port",
-			"                   Examples:",
-			"                     http://proxy.com:8080",
-			"                     http://user:pass@proxy.com:8080",
-			"                     socks5://127.0.0.1:9050",
-		},
-		"OTHER": {
-			"-help             Show this help message",
-			"-list             Show all available options (or specific options with filters flags)",
-		},
-		"NOTES": {
-			"• All flags options can be combined",
-			"• Range filters use 'from-to' format (e.g., 10-20, 1000-5000)",
-			"• Range values must be positive integers (from ≤ to)",
-			"• IP ranges support both 'from-to' and CIDR (e.g., 192.168.0.0/24)",
-			"• Quotes required for CIDR in shells: -ip=\"192.168.0.0/24\"",
-			"• Start page allows resuming scraping from a specific page",
-			"• Proxy format: protocol://user:pass@host:port",
-			"• Supported protocols: HTTP, HTTPS, SOCKS5",
-			"• If scraping fails, change IP, or use proxy",
-		},
-	}
+	fmt.Println(`Scrapes domain lists from myip.ms with various filtering options.
 
-	order := []string{
-		"DESCRIPTION", "USAGE", "FILTER OPTIONS", "OUTPUT OPTIONS",
-		"PROXY OPTIONS", "OTHER", "NOTES",
-	}
+USAGE:
+  scraper [OPTIONS]
 
-	for _, section := range order {
-		fmt.Println(section + ":")
-		for _, line := range sections[section] {
-			fmt.Println("  " + line)
-		}
-		fmt.Println()
-	}
+FILTER OPTIONS:
+  -country <name>    Filter by country name (e.g., "USA", "India", "Japan")
+  -owner <name>      Filter by hosting provider (e.g., "Cloudflare, Inc")
+  -host <name>       Filter by specific host
+  -dns <record>      Filter by DNS record
+  -url <text>        Filter by URL containing specific text (e.g., wiki, blog)
+  -rank <range>      Filter by popularity ranking range (e.g., 10-20)
+  -ip <range>        Filter by IP address range (e.g., 104.16.0.0-104.16.255.255 or 192.168.0.0/24)
+  -visitors <range>  Filter by visitor count range (e.g., 1000-20000)
+
+OUTPUT OPTIONS:
+  -output <file>     Output filename (default: domains.txt)
+  -pages <num>       Max pages to scrape (0 = unlimited, default: unlimited)
+  -start <num>       Starting page number (default: 1)
+
+PROXY OPTIONS:
+  -proxy <url>       Proxy URL with optional authentication
+					 Format: protocol://user:pass@host:port
+					 Examples:
+					   http://proxy.com:8080
+					   http://user:pass@proxy.com:8080
+					   socks5://127.0.0.1:9050
+
+OTHER:
+  -help             Show this help message
+  -list             Show all available options (or specific options with filters flags)
+
+NOTES:
+  • All flags options can be combined
+  • Range filters use 'from-to' format (e.g., 10-20, 1000-5000)
+  • Range values must be positive integers (from ≤ to)
+  • IP ranges support both 'from-to' and CIDR (e.g., 192.168.0.0/24)
+  • Quotes required for CIDR in shells: -ip="192.168.0.0/24"
+  • Start page allows resuming scraping from a specific page
+  • Proxy format: protocol://user:pass@host:port
+  • Supported protocols: HTTP, HTTPS, SOCKS5
+  • If scraping fails, change IP, or use proxy`)
 }
 
 // Helper function to display a category of options with generic values
